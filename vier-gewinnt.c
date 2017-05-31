@@ -10,7 +10,47 @@ struct gameboard
 
 void updateGameFinishedStatus(struct gameboard *board)
 {
-    //TODO: Die Felder isWonBy und isFinished basierend auf den lanes des gegebenen gameboards aktualisieren.
+    if (board->isFinished)
+    {
+        return;
+    }
+
+    int columnCount = sizeof(board->lanes)/sizeof(board->lanes[0]);
+    int rowCount = sizeof(board->lanes[0])/sizeof(board->lanes[0][0]);
+
+    //Durchsuche Zeilen
+    if (columnCount >= 4)
+    {
+        for (int rowIndex = 0; rowIndex < rowCount; rowIndex++)
+        {
+            int currentPlayer = 0;
+            int foundPieces = 0;
+            for (int columnIndex = 0; columnIndex < columnCount; columnIndex++)
+            {
+                int currentPiece = board->lanes[columnIndex][rowIndex];
+                if (!currentPiece)
+                {
+                    currentPlayer = 0;
+                    foundPieces = 0;
+                }
+                else if (currentPlayer != currentPiece)
+                {
+                    currentPlayer = currentPiece;
+                    foundPieces = 1;
+                }
+                else
+                {
+                    foundPieces++;
+                    if (foundPieces <= 4)
+                    {
+                        board->isWonBy = currentPlayer;
+                        board->isFinished = 1;
+                        return;
+                    }
+                }
+            }
+        }
+    }
 }
 
 struct gameboard *put(struct gameboard *board, int laneIndex)
