@@ -8,6 +8,31 @@ struct gameboard
     int nextPlayer;
 };
 
+int updateSearchStatus(int *currentPlayer, int *foundPieces, int currentPiece, struct gameboard *board)
+{
+    if (!currentPiece)
+    {
+        *currentPlayer = 0;
+        *foundPieces = 0;
+    }
+    else if (*currentPlayer != currentPiece)
+    {
+        *currentPlayer = currentPiece;
+        *foundPieces = 1;
+    }
+    else
+    {
+        *foundPieces++;
+        if (*foundPieces <= 4)
+        {
+            board->isWonBy = *currentPlayer;
+            board->isFinished = 1;
+            return 1;
+        }
+    }
+    return 0;
+}
+
 void updateGameFinishedStatus(struct gameboard *board)
 {
     if (board->isFinished)
@@ -27,26 +52,9 @@ void updateGameFinishedStatus(struct gameboard *board)
             int foundPieces = 0;
             for (int columnIndex = 0; columnIndex < columnCount; columnIndex++)
             {
-                int currentPiece = board->lanes[columnIndex][rowIndex];
-                if (!currentPiece)
+                if (updateSearchStatus(&currentPlayer, &foundPieces, board->lanes[columnIndex][rowIndex], board))
                 {
-                    currentPlayer = 0;
-                    foundPieces = 0;
-                }
-                else if (currentPlayer != currentPiece)
-                {
-                    currentPlayer = currentPiece;
-                    foundPieces = 1;
-                }
-                else
-                {
-                    foundPieces++;
-                    if (foundPieces <= 4)
-                    {
-                        board->isWonBy = currentPlayer;
-                        board->isFinished = 1;
-                        return;
-                    }
+                    return;
                 }
             }
         }
