@@ -23,7 +23,7 @@ int updateSearchStatus(int *currentPlayer, int *foundPieces, int currentPiece, s
     else
     {
         *foundPieces++;
-        if (*foundPieces <= 4)
+        if (*foundPieces >= 4)
         {
             board->isWonBy = *currentPlayer;
             board->isFinished = 1;
