@@ -15,6 +15,11 @@ void updateGameFinishedStatus(struct gameboard *board)
 
 struct gameboard *put(struct gameboard *board, int laneIndex)
 {
+    if (board->isFinished)
+    {
+        return NULL;
+    }
+    
     int *updateLane = board->lanes[laneIndex];
     int laneSize = sizeof(board->lanes[laneIndex])/sizeof(board->lanes[laneIndex][0]);
     int rowIndex = 0;
