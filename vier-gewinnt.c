@@ -61,6 +61,25 @@ void updateGameFinishedStatus(struct gameboard *board)
             }
         }
     }
+
+    if (rowCount < 4)
+    {
+        return;
+    }
+
+    //Durchsuche Spalten
+    for (int columnIndex = 0; columnIndex < columnCount; columnIndex++)
+    {
+        currentPlayer = 0;
+        foundPieces = 0;
+        for (int rowIndex = 0; rowIndex < rowCount; rowIndex++)
+        {
+            if (updateSearchStatus(&currentPlayer, &foundPieces, board->lanes[columnIndex][rowIndex], board))
+            {
+                return;
+            }
+        }
+    }
 }
 
 struct gameboard *put(struct gameboard *board, int laneIndex)
