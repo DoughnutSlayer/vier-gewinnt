@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 struct gameboard
 {
     int lanes[4][4];
@@ -6,10 +8,9 @@ struct gameboard
     int nextPlayer;
 };
 
-struct gameboard put(struct gameboard current, int laneIndex)
+struct gameboard *put(struct gameboard board, int laneIndex)
 {
-    struct gameboard new = current;
-    int *updateLane = new.lanes[laneIndex];
+    int *updateLane = board.lanes[laneIndex];
     int laneSize = sizeof(updateLane)/sizeof(updateLane[0]);
     int rowIndex = 0;
 
@@ -20,9 +21,11 @@ struct gameboard put(struct gameboard current, int laneIndex)
 
     if (rowIndex > 0)
     {
-        updateLane[rowIndex - 1] = new.nextPlayer;
-        new.nextPlayer = 2 - (2 % new.nextPlayer);
-        return new;
+        struct gameboard *result = malloc(sizeof(*result));
+        *result = board;
+        result->lanes[laneIndex][rowIndex - 1] = result->nextPlayer;
+        result->nextPlayer = 2 - (2 % result->nextPlayer);
+        return result;
     }
     return NULL;
 }
