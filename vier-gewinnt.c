@@ -22,7 +22,7 @@ int updateSearchStatus(int *currentPlayer, int *foundPieces, int currentPiece, s
     }
     else
     {
-        *foundPieces++;
+        ++*foundPieces;
         if (*foundPieces >= 4)
         {
             board->isWonBy = *currentPlayer;
@@ -181,7 +181,7 @@ struct gameboard *put(struct gameboard *board, int laneIndex)
     {
         return NULL;
     }
-    
+
     int *updateLane = board->lanes[laneIndex];
     int laneSize = sizeof(board->lanes[laneIndex])/sizeof(board->lanes[laneIndex][0]);
     int rowIndex = 0;
