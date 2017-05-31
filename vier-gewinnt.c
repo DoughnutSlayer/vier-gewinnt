@@ -29,7 +29,7 @@ struct gameboard *put(struct gameboard *board, int laneIndex)
         struct gameboard *result = malloc(sizeof(*result));
         *result = *board;
         result->lanes[laneIndex][rowIndex - 1] = result->nextPlayer;
-        result->nextPlayer = 2 - (2 % result->nextPlayer);
+        result->nextPlayer = 1 + (result->nextPlayer % 2);
         updateGameFinishedStatus(result);
         return result;
     }
