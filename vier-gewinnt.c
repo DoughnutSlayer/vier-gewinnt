@@ -115,6 +115,34 @@ void updateGameFinishedStatus(struct gameboard *board)
             columnAnchor++;
         }
     }
+
+    //Durchsuche "\" Diagonalen
+    rowAnchor = 3;
+    columnAnchor = columnCount - 1;
+    while (columnAnchor >= 3)
+    {
+        rowIndex = rowAnchor;
+        columnIndex = columnAnchor;
+        currentPlayer = 0;
+        foundPieces = 0;
+        while (rowIndex >= 0 && columnIndex >= 0)
+        {
+            if (updateSearchStatus(&currentPlayer, &foundPieces, board->lanes[columnIndex][rowIndex], board))
+            {
+                return;
+            }
+            rowIndex--;
+            columnIndex--;
+        }
+        if (rowAnchor < rowCount - 1)
+        {
+            rowAnchor++;
+        }
+        else
+        {
+            columnAnchor--;
+        }
+    }
 }
 
 struct gameboard *put(struct gameboard *board, int laneIndex)
