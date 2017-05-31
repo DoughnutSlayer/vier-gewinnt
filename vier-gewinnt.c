@@ -80,6 +80,41 @@ void updateGameFinishedStatus(struct gameboard *board)
             }
         }
     }
+
+    if (columnCount < 4)
+    {
+        return;
+    }
+
+    //Durchsuche "/" Diagonalen
+    int rowAnchor = 3;
+    int columnAnchor = 0;
+    int rowIndex;
+    int columnIndex;
+    while (columnAnchor <= columnCount - 4)
+    {
+        rowIndex = rowAnchor;
+        columnIndex = columnAnchor;
+        currentPlayer = 0;
+        foundPieces = 0;
+        while (rowIndex >= 0 && columnIndex < columnCount)
+        {
+            if (updateSearchStatus(&currentPlayer, &foundPieces, board->lanes[columnIndex][rowIndex], board))
+            {
+                return;
+            }
+            rowIndex--;
+            columnIndex++;
+        }
+        if (rowAnchor < rowCount - 1)
+        {
+            rowAnchor++;
+        }
+        else
+        {
+            columnAnchor++;
+        }
+    }
 }
 
 struct gameboard *put(struct gameboard *board, int laneIndex)
