@@ -42,14 +42,16 @@ void updateGameFinishedStatus(struct gameboard *board)
 
     int columnCount = sizeof(board->lanes)/sizeof(board->lanes[0]);
     int rowCount = sizeof(board->lanes[0])/sizeof(board->lanes[0][0]);
+    int currentPlayer = 0;
+    int foundPieces = 0;
 
     //Durchsuche Zeilen
     if (columnCount >= 4)
     {
         for (int rowIndex = 0; rowIndex < rowCount; rowIndex++)
         {
-            int currentPlayer = 0;
-            int foundPieces = 0;
+            currentPlayer = 0;
+            foundPieces = 0;
             for (int columnIndex = 0; columnIndex < columnCount; columnIndex++)
             {
                 if (updateSearchStatus(&currentPlayer, &foundPieces, board->lanes[columnIndex][rowIndex], board))
