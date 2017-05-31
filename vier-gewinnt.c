@@ -16,7 +16,7 @@ void updateGameFinishedStatus(struct gameboard *board)
 struct gameboard *put(struct gameboard *board, int laneIndex)
 {
     int *updateLane = board->lanes[laneIndex];
-    int laneSize = sizeof(updateLane)/sizeof(updateLane[0]);
+    int laneSize = sizeof(board->lanes[laneIndex])/sizeof(board->lanes[laneIndex][0]);
     int rowIndex = 0;
 
     while(rowIndex < laneSize && updateLane[rowIndex] == 0)
