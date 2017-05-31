@@ -8,9 +8,9 @@ struct gameboard
     int nextPlayer;
 };
 
-struct gameboard *put(struct gameboard board, int laneIndex)
+struct gameboard *put(struct gameboard *board, int laneIndex)
 {
-    int *updateLane = board.lanes[laneIndex];
+    int *updateLane = board->lanes[laneIndex];
     int laneSize = sizeof(updateLane)/sizeof(updateLane[0]);
     int rowIndex = 0;
 
@@ -22,7 +22,7 @@ struct gameboard *put(struct gameboard board, int laneIndex)
     if (rowIndex > 0)
     {
         struct gameboard *result = malloc(sizeof(*result));
-        *result = board;
+        *result = *board;
         result->lanes[laneIndex][rowIndex - 1] = result->nextPlayer;
         result->nextPlayer = 2 - (2 % result->nextPlayer);
         return result;
