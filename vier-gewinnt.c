@@ -33,41 +33,37 @@ int updateSearchStatus(int *currentPlayer, int *foundPieces, int currentPiece, s
     return 0;
 }
 
-void updateGameFinishedStatus(struct gameboard *board)
+int checkRowsForMatch(int columnCount, int rowCount, struct gameboard *board)
 {
-    if (board->isFinished)
+    if (columnCount < 4)
     {
-        return;
+        return 0;
     }
-
-    int columnCount = sizeof(board->lanes)/sizeof(board->lanes[0]);
-    int rowCount = sizeof(board->lanes[0])/sizeof(board->lanes[0][0]);
-    int currentPlayer = 0;
-    int foundPieces = 0;
-
-    //Durchsuche Zeilen
-    if (columnCount >= 4)
+    int currentPlayer;
+    int foundPieces;
+    for (int rowIndex = 0; rowIndex < rowCount; rowIndex++)
     {
-        for (int rowIndex = 0; rowIndex < rowCount; rowIndex++)
+        currentPlayer = 0;
+        foundPieces = 0;
+        for (int columnIndex = 0; columnIndex < columnCount; columnIndex++)
         {
-            currentPlayer = 0;
-            foundPieces = 0;
-            for (int columnIndex = 0; columnIndex < columnCount; columnIndex++)
+            if (updateSearchStatus(&currentPlayer, &foundPieces, board->lanes[columnIndex][rowIndex], board))
             {
-                if (updateSearchStatus(&currentPlayer, &foundPieces, board->lanes[columnIndex][rowIndex], board))
-                {
-                    return;
-                }
+                return 1;
             }
         }
     }
+    return 0;
+}
 
+int checkColumnsForMatch(int columnCount, int rowCount, struct gameboard *board)
+{
     if (rowCount < 4)
     {
-        return;
+        return 0;
     }
-
-    //Durchsuche Spalten
+    int currentPlayer;
+    int foundPieces;
     for (int columnIndex = 0; columnIndex < columnCount; columnIndex++)
     {
         currentPlayer = 0;
@@ -76,21 +72,25 @@ void updateGameFinishedStatus(struct gameboard *board)
         {
             if (updateSearchStatus(&currentPlayer, &foundPieces, board->lanes[columnIndex][rowIndex], board))
             {
-                return;
+                return 1;
             }
         }
     }
+    return 0;
+}
 
-    if (columnCount < 4)
+int checkForwardDiagonalsForMatch(int columnCount, int rowCount, struct gameboard *board)
+{
+    if (columnCount < 4 || rowCount < 4)
     {
-        return;
+        return 0;
     }
-
-    //Durchsuche "/" Diagonalen
     int rowAnchor = 3;
     int columnAnchor = 0;
     int rowIndex;
     int columnIndex;
+    int currentPlayer;
+    int foundPieces;
     while (columnAnchor <= columnCount - 4)
     {
         rowIndex = rowAnchor;
@@ -101,7 +101,7 @@ void updateGameFinishedStatus(struct gameboard *board)
         {
             if (updateSearchStatus(&currentPlayer, &foundPieces, board->lanes[columnIndex][rowIndex], board))
             {
-                return;
+                return 1;
             }
             rowIndex--;
             columnIndex++;
@@ -115,10 +115,21 @@ void updateGameFinishedStatus(struct gameboard *board)
             columnAnchor++;
         }
     }
+    return 0;
+}
 
-    //Durchsuche "\" Diagonalen
-    rowAnchor = 3;
-    columnAnchor = columnCount - 1;
+int checkBackwardDiagonalsForMatch(int columnCount, int rowCount, struct gameboard *board)
+{
+    if (columnCount < 4 || rowCount < 4)
+    {
+        return 0;
+    }
+    int rowAnchor = 3;
+    int columnAnchor = columnCount - 1;
+    int rowIndex;
+    int columnIndex;
+    int currentPlayer;
+    int foundPieces;
     while (columnAnchor >= 3)
     {
         rowIndex = rowAnchor;
@@ -129,7 +140,7 @@ void updateGameFinishedStatus(struct gameboard *board)
         {
             if (updateSearchStatus(&currentPlayer, &foundPieces, board->lanes[columnIndex][rowIndex], board))
             {
-                return;
+                return 1;
             }
             rowIndex--;
             columnIndex--;
@@ -142,6 +153,25 @@ void updateGameFinishedStatus(struct gameboard *board)
         {
             columnAnchor--;
         }
+    }
+    return 0;
+}
+
+void updateGameFinishedStatus(struct gameboard *board)
+{
+    if (board->isFinished)
+    {
+        return;
+    }
+
+    int columnCount = sizeof(board->lanes)/sizeof(board->lanes[0]);
+    int rowCount = sizeof(board->lanes[0])/sizeof(board->lanes[0][0]);
+
+    if (checkRowsForMatch(columnCount, rowCount, board)
+        || checkColumnsForMatch(columnCount, rowCount, board)
+        || checkForwardDiagonalsForMatch(columnCount, rowCount, board)
+        || checkBackwardDiagonalsForMatch(columnCount, rowCount, board))
+    {
     }
 }
 
