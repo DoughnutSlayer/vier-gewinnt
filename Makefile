@@ -1,7 +1,12 @@
+ifndef CC
+	CC = gcc
+endif
+CFLAGS = -Wall
+DEPS = gameboard.h
 OBJS = gameboard.o
 
-gameboard.o : gameboard.c gameboard.h
-	gcc -c gameboard.c
+gameboard.o : gameboard.c $(DEPS)
+	$(CC) $(CFLAGS) -c gameboard.c
 
 .PHONY : clean
 clean :
