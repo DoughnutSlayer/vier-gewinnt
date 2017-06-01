@@ -1,7 +1,7 @@
-OBJS = vier-gewinnt.o
+OBJS = gameboard.o
 
-vier-gewinnt.o : vier-gewinnt.c
-	gcc -c vier-gewinnt.c
+gameboard.o : gameboard.c
+	gcc -c gameboard.c
 
 .PHONY : clean
 clean :
