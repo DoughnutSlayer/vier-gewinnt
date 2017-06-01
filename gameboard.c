@@ -1,12 +1,5 @@
 #include <stdlib.h>
-
-struct gameboard
-{
-    int lanes[4][4];
-    int isWonBy;
-    int isFinished;
-    int nextPlayer;
-};
+#include "gameboard.h"
 
 int updateSearchStatus(int *currentPlayer, int *foundPieces, int currentPiece, struct gameboard *board)
 {

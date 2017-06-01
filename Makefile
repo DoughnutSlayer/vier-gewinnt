@@ -1,6 +1,6 @@
 OBJS = gameboard.o
 
-gameboard.o : gameboard.c
+gameboard.o : gameboard.c gameboard.h
 	gcc -c gameboard.c
 
 .PHONY : clean
