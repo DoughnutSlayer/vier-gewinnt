@@ -1,7 +1,16 @@
+ifndef BOARD_WIDTH
+	BOARD_WIDTH = 4
+endif
+
+ifndef BOARD_HEIGHT
+	BOARD_HEIGHT = 4
+endif
+
 ifndef CC
 	CC = gcc
 endif
-CFLAGS = -Wall
+
+CFLAGS = -Wall -DBOARD_WIDTH=$(BOARD_WIDTH) -DBOARD_HEIGHT=$(BOARD_HEIGHT)
 DEPS = gameboard.h
 OBJS = gameboard.o
 
