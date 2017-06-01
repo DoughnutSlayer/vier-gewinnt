@@ -9,6 +9,9 @@
 #define BOARD_WIDTH 4
 #endif
 
+const int boardWidth = BOARD_WIDTH;
+const int boardHeight = BOARD_HEIGHT;
+
 struct gameboard
 {
     int lanes[BOARD_WIDTH][BOARD_HEIGHT];
