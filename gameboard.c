@@ -19,7 +19,6 @@ int updateSearchStatus(int *currentPlayer, int *foundPieces, int currentPiece, s
         if (*foundPieces >= 4)
         {
             board->isWonBy = *currentPlayer;
-            board->isFinished = 1;
             return 1;
         }
     }
@@ -165,7 +164,7 @@ int boardIsFull(struct gameboard *board)
 
 void updateGameFinishedStatus(struct gameboard *board)
 {
-    if (board->isFinished)
+    if (board->isWonBy)
     {
         return;
     }
@@ -184,7 +183,7 @@ void updateGameFinishedStatus(struct gameboard *board)
 
 struct gameboard *put(struct gameboard *board, int laneIndex)
 {
-    if (board->isFinished)
+    if (board->isWonBy)
     {
         return NULL;
     }

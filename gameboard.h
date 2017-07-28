@@ -16,7 +16,6 @@ struct gameboard
 {
     int lanes[BOARD_WIDTH][BOARD_HEIGHT];
     int isWonBy;
-    int isFinished;
     int nextPlayer;
 };
 
