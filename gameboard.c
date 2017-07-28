@@ -19,7 +19,6 @@ int updateSearchStatus(int *currentPlayer, int *foundPieces, int currentPiece, s
         if (*foundPieces >= 4)
         {
             board->isWonBy = *currentPlayer;
-            board->isFinished = 1;
             return 1;
         }
     }
@@ -150,9 +149,22 @@ int checkBackwardDiagonalsForMatch(int columnCount, int rowCount, struct gameboa
     return 0;
 }
 
+int boardIsFull(struct gameboard *board)
+{
+  for (int i = 0; i < boardWidth; i++)
+  {
+    if(!board->lanes[i][0])
+    {
+      return 0;
+    }
+  }
+  board->isWonBy = 3;
+  return 1;
+}
+
 void updateGameFinishedStatus(struct gameboard *board)
 {
-    if (board->isFinished)
+    if (board->isWonBy)
     {
         return;
     }
@@ -163,14 +175,15 @@ void updateGameFinishedStatus(struct gameboard *board)
     if (checkRowsForMatch(columnCount, rowCount, board)
         || checkColumnsForMatch(columnCount, rowCount, board)
         || checkForwardDiagonalsForMatch(columnCount, rowCount, board)
-        || checkBackwardDiagonalsForMatch(columnCount, rowCount, board))
+        || checkBackwardDiagonalsForMatch(columnCount, rowCount, board)
+	      || boardIsFull(board))
     {
     }
 }
 
 struct gameboard *put(struct gameboard *board, int laneIndex)
 {
-    if (board->isFinished)
+    if (board->isWonBy)
     {
         return NULL;
     }
