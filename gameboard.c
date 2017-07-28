@@ -150,6 +150,19 @@ int checkBackwardDiagonalsForMatch(int columnCount, int rowCount, struct gameboa
     return 0;
 }
 
+int boardIsFull(struct gameboard *board)
+{
+  for (int i = 0; i < boardWidth; i++)
+  {
+    if(!board->lanes[i][0])
+    {
+      return 0;
+    }
+  }
+  board->isWonBy = 3;
+  return 1;
+}
+
 void updateGameFinishedStatus(struct gameboard *board)
 {
     if (board->isFinished)
@@ -163,7 +176,8 @@ void updateGameFinishedStatus(struct gameboard *board)
     if (checkRowsForMatch(columnCount, rowCount, board)
         || checkColumnsForMatch(columnCount, rowCount, board)
         || checkForwardDiagonalsForMatch(columnCount, rowCount, board)
-        || checkBackwardDiagonalsForMatch(columnCount, rowCount, board))
+        || checkBackwardDiagonalsForMatch(columnCount, rowCount, board)
+	      || boardIsFull(board))
     {
     }
 }
