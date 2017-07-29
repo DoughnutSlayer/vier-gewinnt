@@ -1,6 +1,17 @@
 #include <stdlib.h>
 #include "gameboard.h"
 
+#ifndef BOARD_HEIGHT
+#define BOARD_HEIGHT 4
+#endif
+
+#ifndef BOARD_WIDTH
+#define BOARD_WIDTH 4
+#endif
+
+const int boardWidth = BOARD_WIDTH;
+const int boardHeight = BOARD_HEIGHT;
+
 int updateSearchStatus(int *currentPlayer, int *foundPieces, int currentPiece, struct gameboard *board)
 {
     if (!currentPiece)
