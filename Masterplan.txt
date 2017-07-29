@@ -10,7 +10,7 @@
   Master besteht aus 2 queues
     1.queue ist die derzeitige Generation
     2.queue ist die nächste Generation
-      2.queue kann Mergefunktion um zr ersten queue zu werden
+      2.queue kann Mergefunktion um zur ersten queue zu werden (free hashes)
   Master verteilt immer X knoten an jeden unterprozess wobei X ein Limit darstellt
   Ist die Anzahl der Knoten kleiner X*Prozesse so werden je X/Prozesse Prozesse verteilt
 
