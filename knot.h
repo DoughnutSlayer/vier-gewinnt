@@ -15,7 +15,7 @@ struct knot
 {
     struct knot** predecessors;
     struct knot** successors;
-    struct gameboard gameboard;
+    struct gameboard* gameboard;
     char gameboardHash[BOARD_WIDTH * BOARD_HEIGHT];
     double winPercentage; //Between 0-100
 };

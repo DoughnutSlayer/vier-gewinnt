@@ -6,7 +6,7 @@
 extern const int boardWidth;
 extern const int boardHeight;
 
-char* calculateHash(struct gameboard gameboard)
+char* calculateHash(struct gameboard* gameboard)
 {
     char* hash = malloc((boardWidth * boardHeight) * sizeof(char));
     for (int lane = 0; lane < boardWidth; lane++)
