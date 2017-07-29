@@ -3,6 +3,9 @@
 #include "gameboard.h"
 #include "knot.h"
 
+extern const int boardWidth;
+extern const int boardHeight;
+
 char* calculateHash(struct gameboard gameboard)
 {
     char* hash = malloc((boardWidth * boardHeight) * sizeof(char));
