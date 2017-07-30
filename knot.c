@@ -14,7 +14,7 @@ char* calculateHash(struct gameboard* gameboard)
         for (int row = 0; row < boardHeight; row++)
         {
             char buffer[1];
-            sprintf(buffer, "%d", gameboard.lanes[lane][row]);
+            sprintf(buffer, "%d", gameboard->lanes[lane][row]);
             hash[(lane * boardWidth) + row] = buffer[0];
         }
     }
