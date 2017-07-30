@@ -5,23 +5,17 @@
 extern const int boardWidth;
 
 //Queue 1 for current knots
-struct knot** currentKnots;
+struct knot **currentKnots;
 //Queue 2 for next knots
-struct knot** nextKnots;
+struct knot **nextKnots;
 
-int currentCountOfAddedSucessors;
+int allSuccessorsCount;
 
-void initializeCurrentKnots(struct knot* startKnot)
+int checkForDuplicate(struct knot *knot)
 {
-    currentKnots = malloc(startKnot * sizeof(startKnot));
-    currentKnots[0] = startKnot;
-}
-
-int checkForDuplicate(struct knot knot)
-{
-    for (int i = 0; i < sizeof(nextKnots)/sizeof(struct knot*); i++)
+    for (int i = 0; i < sizeof(nextKnots)/sizeof(struct knot *); i++)
     {
-        if (!strcmp(nextKnots[i]->gameboardHash, knot.gameboardHash))
+        if (!strcmp(nextKnots[i]->gameboardHash, knot->gameboardHash))
         {
             return i;
         }
@@ -29,55 +23,71 @@ int checkForDuplicate(struct knot knot)
     return -1;
 }
 
-void setSuccessors(struct knot* knot)
+void setSuccessorsOf(struct knot *knot)
 {
-    knot->successors = malloc(sizeof(struct knot*) * boardWidth);
+    //The number of successors that "knot" currently has
+    int knotSuccessorsCount = 0;
+    knot->successors = malloc(sizeof(struct knot *) * boardWidth);
     for (int lane = 0; lane < boardWidth; lane++)
     {
-        struct knot successor = malloc(sizeof(struct knot));
-        successor.gameboard = put(knot->gameboard, lane);
-        if (successor.gameboard != NULL)
+        struct knot *successor = malloc(sizeof(struct knot));
+        successor->gameboard = put(knot->gameboard, lane);
+        if (successor->gameboard != NULL)
         {
             int duplicateSuccessorIndex = checkForDuplicate(successor);
             if(duplicateSuccessorIndex == -1);
             {
-                successor.predecessors[0] = knot;
-                //TODO fix this
-                knot->successor[lane] = &successor;
-                nextKnots[currentCountOfAddedSucessors] = &successor;
-                currentCountOfAddedSucessors++;
+                successor->gameboardHash = calculateHash(*(successor->gameboard));
+                successor->predecessors = malloc(sizeof(knot));
+                successor->predecessors[0] = knot;
+                knot->successor[knotSuccessorsCount] = successor;
+                nextKnots[allSuccessorsCount] = successor;
+                allSuccessorsCount++;
             }
             else
             {
-                struct knot** successorPredecessors = nextKnots[duplicateSuccessorIndex]->predecessors;
-                successorPredecessors[sizeof(successorPredecessors)/sizeof(successorPredecessors[0])] = knot;
-                knot->successors[lane] = nextKnots[duplicateSuccessorIndex];
+                free(successor);
+                successor = nextKnots[duplicateSuccessorIndex];
+                successor->predecessors = realloc(successor->predecessors, sizeof(successor->predecessors) + sizeof(successor->predecessors[0]));
+                successor->predecessors[sizeof(successor->predecessors)/sizeof(successor->predecessors[0])] = knot;
+                knot->successors[knotSuccessorsCount] = successors;
             }
+            knotSuccessorsCount++;
         }
         else
         {
             free(successor);
         }
     }
+    knot->successors = realloc(knot->successors, sizeof(knot->successors) * knotSuccessorsCount);
 }
 
 void setNextKnots()
 {
-    currentCountOfAddedSucessors = 0;
+    nextKnots = malloc(sizeof(currentKnots) * boardWidth);
+    allSuccessorsCount = 0;
     for (int currentKnot = 0; currentKnot < sizeof(currentKnots)/sizeof(currentKnots[0]); currentKnot++)
     {
-        setSuccessors(currentKnots[currentKnot]);
+        setSuccessorsOf(currentKnots[currentKnot]);
     }
+    nextKnots = realloc(nextKnots, allSuccessorsCount);
 }
 
-void buildTree(struct knot* startKnot)
+void initializeQueues(struct knot *startKnot)
 {
-    initializeCurrentKnots(startKnot);
-    while (sizeof(currentKnots) != 0) //TODO does work?
+    nextKnots = malloc(sizeof(startKnot));
+    nextKnots[0] = startKnot;
+    currentKnots = malloc(1);
+}
+
+void buildTree(struct knot *startKnot)
+{
+    initializeQueues(startKnot);
+    while (nextKnots != NULL)
     {
-        setNextKnots();
         free(currentKnots);
         currentKnots = nextKnots;
-        nextKnots = malloc(sizeof(currentKnots) * boardWidth);
+        setNextKnots();
     }
+    //Hier sind die currentKnots die letzte Generation von Knoten
 }
