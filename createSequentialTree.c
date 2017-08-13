@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 #include "gameboard.h"
 #include "knot.h"
 
