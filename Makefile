@@ -12,7 +12,10 @@ endif
 
 CFLAGS = -Wall -std=c99 -DBOARD_WIDTH=$(BOARD_WIDTH) -DBOARD_HEIGHT=$(BOARD_HEIGHT)
 DEPS = gameboard.h knot.h
-OBJS = createSequentialTree.o gameboard.o knot.o
+OBJS = calculateSequentialWinPercentage.o createSequentialTree.o gameboard.o knot.o
+
+calculateSequentialWinPercentage.o : calculateSequentialWinPercentage.c $(DEPS)
+	$(CC) $(CFLAGS) -c calculateSequentialWinPercentage.c
 
 createSequentialTree.o : createSequentialTree.c $(DEPS)
 	$(CC) $(CFLAGS) -c createSequentialTree.c
