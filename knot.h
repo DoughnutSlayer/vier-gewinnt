@@ -9,7 +9,7 @@ struct knot
     int predecessorsCount;
     struct knot **successors;
     struct gameboard *gameboard;
-    char gameboardHash[BOARD_WIDTH * BOARD_HEIGHT];
+    char gameboardHash[(BOARD_WIDTH * BOARD_HEIGHT) + 1];
     double winPercentage; //Between 0-100
 };
 
