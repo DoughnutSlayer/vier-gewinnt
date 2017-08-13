@@ -10,7 +10,7 @@
 #endif
 
 extern const int boardWidth;
-extern const int boardHeigh;
+extern const int boardHeight;
 
 struct gameboard
 {
