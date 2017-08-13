@@ -6,6 +6,7 @@
 struct knot
 {
     struct knot **predecessors;
+    int predecessorsCount;
     struct knot **successors;
     struct gameboard *gameboard;
     char gameboardHash[BOARD_WIDTH * BOARD_HEIGHT];
