@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 #include "gameboard.h"
 #include "knot.h"
 
@@ -34,13 +35,13 @@ void setSuccessorsOf(struct knot *knot)
         successor->gameboard = put(knot->gameboard, lane);
         if (successor->gameboard != NULL)
         {
+            calculateHash(successor);
             int duplicateSuccessorIndex = checkForDuplicate(successor);
-            if(duplicateSuccessorIndex == -1);
+            if(duplicateSuccessorIndex == -1)
             {
-                successor->gameboardHash = calculateHash(*(successor->gameboard));
                 successor->predecessors = malloc(sizeof(knot));
                 successor->predecessors[0] = knot;
-                knot->successor[knotSuccessorsCount] = successor;
+                knot->successors[knotSuccessorsCount] = successor;
                 nextKnots[allSuccessorsCount] = successor;
                 allSuccessorsCount++;
             }
@@ -50,7 +51,7 @@ void setSuccessorsOf(struct knot *knot)
                 successor = nextKnots[duplicateSuccessorIndex];
                 successor->predecessors = realloc(successor->predecessors, sizeof(successor->predecessors) + sizeof(successor->predecessors[0]));
                 successor->predecessors[sizeof(successor->predecessors)/sizeof(successor->predecessors[0])] = knot;
-                knot->successors[knotSuccessorsCount] = successors;
+                knot->successors[knotSuccessorsCount] = successor;
             }
             knotSuccessorsCount++;
         }
