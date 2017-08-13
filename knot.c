@@ -6,17 +6,15 @@
 extern const int boardWidth;
 extern const int boardHeight;
 
-char *calculateHash(struct gameboard *gameboard)
+void calculateHash(struct knot *knot)
 {
-    char *hash = malloc((boardWidth * boardHeight) * sizeof(char));
     for (int lane = 0; lane < boardWidth; lane++)
     {
         for (int row = 0; row < boardHeight; row++)
         {
             char buffer[1];
-            sprintf(buffer, "%d", gameboard->lanes[lane][row]);
-            hash[(lane * boardWidth) + row] = buffer[0];
+            sprintf(buffer, "%d", knot->gameboard->lanes[lane][row]);
+            knot->gameboardHash[(lane * boardWidth) + row] = buffer[0];
         }
     }
-    return hash;
 }

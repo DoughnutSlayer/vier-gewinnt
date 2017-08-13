@@ -12,6 +12,6 @@ struct knot
     double winPercentage; //Between 0-100
 };
 
-char *calculateHash(struct gameboard *gameboard);
+void calculateHash(struct knot *knot);
 
 #endif

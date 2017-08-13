@@ -35,10 +35,10 @@ void setSuccessorsOf(struct knot *knot)
         successor->gameboard = put(knot->gameboard, lane);
         if (successor->gameboard != NULL)
         {
+            calculateHash(successor);
             int duplicateSuccessorIndex = checkForDuplicate(successor);
             if(duplicateSuccessorIndex == -1)
             {
-                successor->gameboardHash = calculateHash(*(successor->gameboard));
                 successor->predecessors = malloc(sizeof(knot));
                 successor->predecessors[0] = knot;
                 knot->successors[knotSuccessorsCount] = successor;
