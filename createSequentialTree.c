@@ -88,11 +88,12 @@ void initializeQueues(struct knot *startKnot)
 void buildTree(struct knot *startKnot)
 {
     initializeQueues(startKnot);
-    while (nextKnots != NULL)
+    do
     {
         free(currentKnots);
         currentKnots = nextKnots;
         setNextKnots();
     }
+    while (nextKnotsCount > 0);
     //Hier sind die currentKnots die letzte Generation von Knoten
 }
