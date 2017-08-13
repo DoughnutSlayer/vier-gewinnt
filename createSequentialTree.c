@@ -59,7 +59,7 @@ void setSuccessorsOf(struct knot *knot)
             free(successor);
         }
     }
-    knot->successors = realloc(knot->successors, sizeof(knot->successors) * knotSuccessorsCount);
+    knot->successors = realloc(knot->successors, sizeof(struct knot *) * knotSuccessorsCount);
 }
 
 void setNextKnots()
