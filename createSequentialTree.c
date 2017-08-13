@@ -10,7 +10,7 @@ struct knot **currentKnots;
 //Queue 2 for next knots
 struct knot **nextKnots;
 
-int allSuccessorsCount;
+int nextKnotsCount;
 
 int checkForDuplicate(struct knot *knot)
 {
@@ -43,8 +43,8 @@ void setSuccessorsOf(struct knot *knot)
                 successor->predecessors[0] = knot;
                 successor->predecessorsCount = 1;
                 knot->successors[knotSuccessorsCount] = successor;
-                nextKnots[allSuccessorsCount] = successor;
-                allSuccessorsCount++;
+                nextKnots[nextKnotsCount] = successor;
+                nextKnotsCount++;
             }
             else
             {
@@ -68,18 +68,19 @@ void setSuccessorsOf(struct knot *knot)
 void setNextKnots()
 {
     nextKnots = malloc(sizeof(currentKnots) * boardWidth);
-    allSuccessorsCount = 0;
     for (int currentKnot = 0; currentKnot < sizeof(currentKnots)/sizeof(currentKnots[0]); currentKnot++)
+    nextKnotsCount = 0;
     {
         setSuccessorsOf(currentKnots[currentKnot]);
     }
-    nextKnots = realloc(nextKnots, allSuccessorsCount);
+    nextKnots = realloc(nextKnots, sizeof(nextKnots) * nextKnotsCount);
 }
 
 void initializeQueues(struct knot *startKnot)
 {
     nextKnots = malloc(sizeof(startKnot));
     nextKnots[0] = startKnot;
+    nextKnotsCount = 1;
     currentKnots = malloc(1);
 }
 
