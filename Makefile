@@ -26,6 +26,10 @@ gameboard.o : gameboard.c $(DEPS)
 knot.o : knot.c $(DEPS)
 	$(CC) $(CFLAGS) -c knot.c
 
+.PHONY : all
+all :
+	make $(OBJS)
+
 .PHONY : clean
 clean :
 	rm -f $(OBJS)
