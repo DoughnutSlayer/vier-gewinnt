@@ -22,12 +22,11 @@ void calculateWinPercentage(struct knot *knot)
         return;
     }
 
-    int successorCount = sizeof(knot->successors) / sizeof(knot->successors[0]);
     double winPercentageSum = 0;
-    for (int i = 0; i < successorCount; i++)
+    for (int i = 0; i < knot->successorsCount; i++)
     {
         calculateWinPercentage(knot->successors[i]);
         winPercentageSum += knot->successors[i]->winPercentage;
     }
-    knot->winPercentage = winPercentageSum / successorCount;
+    knot->winPercentage = winPercentageSum / knot->successorsCount;
 }

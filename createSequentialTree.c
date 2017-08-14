@@ -27,7 +27,7 @@ int checkForDuplicate(struct knot *knot)
 void setSuccessorsOf(struct knot *knot)
 {
     //The number of successors that "knot" currently has
-    int knotSuccessorsCount = 0;
+    knot->successorsCount = 0;
     knot->successors = malloc(sizeof(knot->successors) * boardWidth);
     for (int lane = 0; lane < boardWidth; lane++)
     {
@@ -43,7 +43,7 @@ void setSuccessorsOf(struct knot *knot)
                 successor->predecessors[0] = knot;
                 successor->predecessorsCount = 1;
                 successor->winPercentage = -1;
-                knot->successors[knotSuccessorsCount] = successor;
+                knot->successors[knot->successorsCount] = successor;
                 nextKnots[nextKnotsCount] = successor;
                 nextKnotsCount++;
             }
@@ -54,9 +54,9 @@ void setSuccessorsOf(struct knot *knot)
                 successor->predecessorsCount++;
                 successor->predecessors = realloc(successor->predecessors, sizeof(knot) * successor->predecessorsCount);
                 successor->predecessors[successor->predecessorsCount - 1] = knot;
-                knot->successors[knotSuccessorsCount] = successor;
+                knot->successors[knot->successorsCount] = successor;
             }
-            knotSuccessorsCount++;
+            knot->successorsCount++;
         }
         else
         {
@@ -64,9 +64,9 @@ void setSuccessorsOf(struct knot *knot)
         }
     }
 
-    if (knotSuccessorsCount > 0)
+    if (knot->successorsCount > 0)
     {
-        knot->successors = realloc(knot->successors, sizeof(knot) * knotSuccessorsCount);
+        knot->successors = realloc(knot->successors, sizeof(knot) * knot->successorsCount);
     }
     else
     {
