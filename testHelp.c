@@ -26,7 +26,6 @@ void printKnot(struct knot *knot, char *name)
     printGameboard(knot->gameboard, name);
     printf("Hash: %s\n", knot->gameboardHash);
     printf("Winpercentage: %f\n", knot->winPercentage);
-    printf("Is Calculated: %d\n", knot->winPercentageIsCalculated);
 }
 
 void initializeBoard(struct gameboard *board)
@@ -47,5 +46,6 @@ struct knot *createKnot(struct gameboard *board)
     struct knot *knot = malloc(sizeof(*knot));
     knot->gameboard = board;
     calculateHash(knot);
+    knot->winPercentage = -1;
     return knot;
 }
