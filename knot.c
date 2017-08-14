@@ -14,7 +14,7 @@ void calculateHash(struct knot *knot)
         {
             char buffer[1];
             sprintf(buffer, "%d", knot->gameboard->lanes[lane][row]);
-            int index = (lane * boardWidth) + row;
+            int index = (lane * boardHeight) + row;
             knot->gameboardHash[index] = buffer[0];
         }
     }
