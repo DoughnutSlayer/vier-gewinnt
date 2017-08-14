@@ -107,7 +107,7 @@ void initializeQueues(struct knot *startKnot)
 void buildTree(struct knot *startKnot)
 {
     initializeQueues(startKnot);
-    while (nextKnots);
+    while (nextKnots)
     {
         free(currentKnots);
         currentKnots = nextKnots;
