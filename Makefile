@@ -41,4 +41,4 @@ all :
 
 .PHONY : clean
 clean :
-	rm -f $(OBJS)
+	rm -f $(OBJS) testSequentialCalculateWinpercentage.exe
