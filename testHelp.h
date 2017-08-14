@@ -2,6 +2,7 @@
 #define TESTHELP_H
 
 #include "gameboard.h"
+#include "knot.h"
 
 void printGameboard(struct gameboard *board, char *name);
 
