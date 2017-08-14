@@ -11,7 +11,6 @@ struct knot
     struct gameboard *gameboard;
     char gameboardHash[(BOARD_WIDTH * BOARD_HEIGHT) + 1];
     double winPercentage; //Between 0-100
-    int winPercentageIsCalculated;
 };
 
 void calculateHash(struct knot *knot);
