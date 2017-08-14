@@ -63,7 +63,16 @@ void setSuccessorsOf(struct knot *knot)
             free(successor);
         }
     }
-    knot->successors = realloc(knot->successors, sizeof(knot) * knotSuccessorsCount);
+
+    if (knotSuccessorsCount > 0)
+    {
+        knot->successors = realloc(knot->successors, sizeof(knot) * knotSuccessorsCount);
+    }
+    else
+    {
+        free(knot->successors);
+        knot->successors = NULL;
+    }
 }
 
 void setNextKnots()
@@ -75,7 +84,16 @@ void setNextKnots()
     {
         setSuccessorsOf(currentKnots[currentKnot]);
     }
-    nextKnots = realloc(nextKnots, sizeof(nextKnots) * nextKnotsCount);
+
+    if (nextKnotsCount > 0)
+    {
+        nextKnots = realloc(nextKnots, sizeof(nextKnots) * nextKnotsCount);
+    }
+    else
+    {
+        free(nextKnots);
+        nextKnots = NULL;
+    }
 }
 
 void initializeQueues(struct knot *startKnot)
@@ -89,12 +107,11 @@ void initializeQueues(struct knot *startKnot)
 void buildTree(struct knot *startKnot)
 {
     initializeQueues(startKnot);
-    do
+    while (nextKnots);
     {
         free(currentKnots);
         currentKnots = nextKnots;
         setNextKnots();
     }
-    while (nextKnotsCount > 0);
     //Hier sind die currentKnots die letzte Generation von Knoten
 }

@@ -9,7 +9,7 @@ void calculateWinPercentage(struct knot *knot)
         return;
     }
 
-    if (knot->successors == NULL)
+    if (!knot->successors)
     {
         if (knot->gameboard->isWonBy == 2)
         {
