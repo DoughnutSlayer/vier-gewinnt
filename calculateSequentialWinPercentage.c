@@ -4,12 +4,12 @@
 
 void calculateWinPercentage(struct knot *knot)
 {
-    if (knot->winPercentageIsCalculated)
+    if (knot->winPercentage >= 0)
     {
         return;
     }
 
-    if (knot->successors == NULL)
+    if (!knot->successors)
     {
         if (knot->gameboard->isWonBy == 2)
         {
@@ -19,7 +19,6 @@ void calculateWinPercentage(struct knot *knot)
         {
             knot->winPercentage = 0;
         }
-        knot->winPercentageIsCalculated = 1;
         return;
     }
 
@@ -31,5 +30,4 @@ void calculateWinPercentage(struct knot *knot)
         winPercentageSum += knot->successors[i]->winPercentage;
     }
     knot->winPercentage = winPercentageSum / successorCount;
-    knot->winPercentageIsCalculated = 1;
 }
