@@ -42,6 +42,7 @@ void setSuccessorsOf(struct knot *knot)
                 successor->predecessors = malloc(sizeof(knot));
                 successor->predecessors[0] = knot;
                 successor->predecessorsCount = 1;
+                successor->winPercentage = -1;
                 knot->successors[knotSuccessorsCount] = successor;
                 nextKnots[nextKnotsCount] = successor;
                 nextKnotsCount++;
