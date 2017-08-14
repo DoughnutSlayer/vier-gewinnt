@@ -11,8 +11,8 @@ ifndef CC
 endif
 
 CFLAGS = -Wall -std=c99 -DBOARD_WIDTH=$(BOARD_WIDTH) -DBOARD_HEIGHT=$(BOARD_HEIGHT)
-DEPS = createSequentialTree.h gameboard.h knot.h
-OBJS = calculateSequentialWinPercentage.o createSequentialTree.o gameboard.o knot.o
+DEPS = createSequentialTree.h gameboard.h knot.h testHelp.h
+OBJS = calculateSequentialWinPercentage.o createSequentialTree.o gameboard.o knot.o testHelp.o
 
 calculateSequentialWinPercentage.o : calculateSequentialWinPercentage.c $(DEPS)
 	$(CC) $(CFLAGS) -c calculateSequentialWinPercentage.c
@@ -25,6 +25,9 @@ gameboard.o : gameboard.c $(DEPS)
 
 knot.o : knot.c $(DEPS)
 	$(CC) $(CFLAGS) -c knot.c
+
+testHelp.o : testHelp.c $(DEPS)
+	$(CC) $(CFLAGS) -c testHelp.c
 
 .PHONY : all
 all :
