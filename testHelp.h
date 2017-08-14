@@ -5,6 +5,8 @@
 
 void printGameboard(struct gameboard *board, char *name);
 
+void printKnot(struct knot *knot, char *name);
+
 void initializeBoard(struct gameboard *board);
 
 struct knot *createKnot(struct gameboard *board);

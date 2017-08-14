@@ -21,6 +21,14 @@ void printGameboard(struct gameboard *board, char *name)
     printf("Next: Player %d\n", board->nextPlayer);
 }
 
+void printKnot(struct knot *knot, char *name)
+{
+    printGameboard(knot->gameboard, name);
+    printf("Hash: %s\n", knot->gameboardHash);
+    printf("Winpercentage: %f\n", knot->winPercentage);
+    printf("Is Calculated: %d\n", knot->winPercentageIsCalculated);
+}
+
 void initializeBoard(struct gameboard *board)
 {
     for (int i = 0; i < boardWidth; i++)
