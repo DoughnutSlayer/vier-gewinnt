@@ -27,7 +27,7 @@ int checkForDuplicate(struct knot *knot)
 void setSuccessorsOf(struct knot *knot)
 {
     //The number of successors that "knot" currently has
-    int knotSuccessorsCount = 0;
+    knot->successorsCount = 0;
     knot->successors = malloc(sizeof(knot->successors) * boardWidth);
     for (int lane = 0; lane < boardWidth; lane++)
     {
@@ -42,7 +42,8 @@ void setSuccessorsOf(struct knot *knot)
                 successor->predecessors = malloc(sizeof(knot));
                 successor->predecessors[0] = knot;
                 successor->predecessorsCount = 1;
-                knot->successors[knotSuccessorsCount] = successor;
+                successor->winPercentage = -1;
+                knot->successors[knot->successorsCount] = successor;
                 nextKnots[nextKnotsCount] = successor;
                 nextKnotsCount++;
             }
@@ -53,16 +54,25 @@ void setSuccessorsOf(struct knot *knot)
                 successor->predecessorsCount++;
                 successor->predecessors = realloc(successor->predecessors, sizeof(knot) * successor->predecessorsCount);
                 successor->predecessors[successor->predecessorsCount - 1] = knot;
-                knot->successors[knotSuccessorsCount] = successor;
+                knot->successors[knot->successorsCount] = successor;
             }
-            knotSuccessorsCount++;
+            knot->successorsCount++;
         }
         else
         {
             free(successor);
         }
     }
-    knot->successors = realloc(knot->successors, sizeof(knot) * knotSuccessorsCount);
+
+    if (knot->successorsCount > 0)
+    {
+        knot->successors = realloc(knot->successors, sizeof(knot) * knot->successorsCount);
+    }
+    else
+    {
+        free(knot->successors);
+        knot->successors = NULL;
+    }
 }
 
 void setNextKnots()
@@ -74,7 +84,16 @@ void setNextKnots()
     {
         setSuccessorsOf(currentKnots[currentKnot]);
     }
-    nextKnots = realloc(nextKnots, sizeof(nextKnots) * nextKnotsCount);
+
+    if (nextKnotsCount > 0)
+    {
+        nextKnots = realloc(nextKnots, sizeof(nextKnots) * nextKnotsCount);
+    }
+    else
+    {
+        free(nextKnots);
+        nextKnots = NULL;
+    }
 }
 
 void initializeQueues(struct knot *startKnot)
@@ -88,12 +107,11 @@ void initializeQueues(struct knot *startKnot)
 void buildTree(struct knot *startKnot)
 {
     initializeQueues(startKnot);
-    do
+    while (nextKnots)
     {
         free(currentKnots);
         currentKnots = nextKnots;
         setNextKnots();
     }
-    while (nextKnotsCount > 0);
     //Hier sind die currentKnots die letzte Generation von Knoten
 }
