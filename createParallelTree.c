@@ -155,10 +155,7 @@ void buildParallelTree(int argc, char const *argv[], struct knot *startKnot)
     {
         struct gameboard *sendBuffer = malloc(sizeof(*sendBuffer) * currentKnotsCount);
         int *sendCnts;
-        int *ones = malloc(sizeof(*ones) * worldSize);
-        int *onesDispls = malloc(sizeof(*onesDispls) * worldSize);
         int *displacements;
-        int displacement = 0;
         int *recvBuffer;
         int recvCnt;
         struct gameboard **gameboardRecvBuffer;
@@ -169,32 +166,32 @@ void buildParallelTree(int argc, char const *argv[], struct knot *startKnot)
                 sendBuffer[i] = currentKnots[i]->gameboard;
             }
 
+            int knotsPerProcess = currentKnotsCount / worldSize;
+            int displacement = 0;
             //TODO Limit zum senden
             for(i = 0; i < worldSize; i++)
             {
-                int k = currentKnotsCount/worldSize;
-                if(rank < currentKnotsCount % worldSize)
+                int j = knotsPerProcess;
+                if (rank < currentKnotsCount % worldSize)
                 {
-                    k++;
+                    j += 1;
                 }
-                sendCnts[i] = k;
+                sendCnts[i] = j;
                 displacements[i] = displacement;
-                displacement += k;
-                ones[i] = 1;
-                onesDispls[i] = i;
+                displacement += j;
             }
-            gameboardRecvBuffer = malloc(sizeof(*gameboardRecvBuffer) * currentKnotsCount * (boardWidth + 1));
         }
 
-        MPI_Scatterv(sendCnts, ones, onesDispls, MPI_INT, &recvCnt, 1, MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Scatter(sendCnts, 1, MPI_INT, &recvCnt, MPI_INT, 0, MPI_COMM_WORLD);
 
         recvBuffer = malloc(sizeof(*recvBuffer) * recvCnt);
-        MPI_Scatterv(sendBuffer, sendCnts, displacements, MPI_GAMEBOARD, recvBuffer, recvCnt, MPI_GAMEBOARD, 0, MPI_COMM_WORLD);
+        MPI_Scatterv(sendBuffer, sendCnts, displacements, MPI_GAMEBOARD,
+            recvBuffer, recvCnt, MPI_GAMEBOARD, 0, MPI_COMM_WORLD);
 
-        struct gameboard **toSendGameboards;
+        struct gameboard (*toSendGameboards)[BOARD_WIDTH + 1] = malloc(sizeof(toSendGameboards[0]) * recvCnt);
 
         MPI_Gatherv(toSendGameboards, sendCnts[rank], MPI_GAMEBOARD_ARRAY, gameboardRecvBuffer)
-        //TODO: Calculate next gameboards
+        //TODO: Calculate next gameboards <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
         recvknots += epfangene knots
         nextKnots = recvknots
