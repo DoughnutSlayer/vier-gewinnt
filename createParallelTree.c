@@ -105,7 +105,24 @@ void initializeQueues(struct knot *startKnot)
     nextKnots[0] = startKnot;
     nextKnotsCount = 1;
     currentKnots = malloc(1);
+}
 
+void initMpiTypes(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
+{
+    int boardBlocklengths[3] = {sizeof(((struct gameboard*)0)->lanes),
+        sizeof(((struct gameboard*)0)->isWonBy),
+        sizeof(((struct gameboard*)0)->nextPlayer)};
+    MPI_Aint boardDisplacements[3] = {offsetof(struct gameboard, lanes),
+        offsetof(struct gameboard, isWonBy),
+        offsetof(struct gameboard, nextPlayer)};
+    MPI_Datatype boardTypes[3] = {MPI_INT, MPI_INT, MPI_INT};
+    MPI_Type_create_struct(3, boardBlocklengths, boardDisplacements,
+        boardTypes, boardType);
+    MPI_Type_commit(boardType);
+
+    MPI_Type_contiguous(boardWidth + 1, *boardType, boardArrayType);
+    MPI_Type_commit(boardArrayType);
+}
 
 void buildParallelTree(int argc, char const *argv[], struct knot *startKnot)
 {
@@ -119,6 +136,9 @@ void buildParallelTree(int argc, char const *argv[], struct knot *startKnot)
         MPI_Finalize();
         return;
     }
+
+    MPI_Datatype MPI_GAMEBOARD, MPI_GAMEBOARD_ARRAY;
+    initMpiTypes(&MPI_GAMEBOARD, &MPI_GAMEBOARD_ARRAY);
 
     if (rank == 0)
     {
