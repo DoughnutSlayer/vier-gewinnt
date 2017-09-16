@@ -4,6 +4,7 @@
 #include "createSequentialTree.h"
 #include "gameboard.h"
 #include "knot.h"
+#include "testHelp.h"
 
 extern const int boardWidth;
 
@@ -49,6 +50,7 @@ void pSetSuccessorsOf(struct knot *knot)
                 knot->successors[knot->successorsCount] = successor;
                 nextKnots[nextKnotsCount] = successor;
                 nextKnotsCount++;
+                printKnot(successor);
             }
             else
             {
@@ -237,6 +239,7 @@ void buildParallelTree(int argc, char const *argv[], struct knot *startKnot)
                         successor->successorsCount = 0;
                         nextKnots[nextKnotsCount] = successor;
                         nextKnotsCount += 1;
+                        printKnot(successor);
                     }
                     else
                     {
