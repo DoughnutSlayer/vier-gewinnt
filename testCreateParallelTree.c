@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "createParallelTree.h"
 #include "gameboard.h"
 #include "knot.h"

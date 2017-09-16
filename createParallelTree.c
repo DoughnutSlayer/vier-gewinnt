@@ -50,7 +50,7 @@ void pSetSuccessorsOf(struct knot *knot)
                 knot->successors[knot->successorsCount] = successor;
                 nextKnots[nextKnotsCount] = successor;
                 nextKnotsCount++;
-                printKnot(successor);
+                printKnot(successor, "Initial Successor");
             }
             else
             {
@@ -100,8 +100,7 @@ void pSetNextKnots()
 
 struct knot *getCurrentKnot(struct gameboard *board)
 {
-    struct knot *result = NULL;
-    struct knot *toFind = malloc(sizeof(*toFind);
+    struct knot *toFind = malloc(sizeof(*toFind));
     toFind->gameboard = board;
     calculateHash(toFind);
     for (int i = 0; i < currentKnotsCount; i++)
@@ -138,9 +137,10 @@ void buildParallelTree(int argc, char const *argv[], struct knot *startKnot)
     MPI_INIT(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &worldSize);
+    printKnot(startKnot, "Root");
     if (worldSize == 1)
     {
-        buildTree(knot);
+        buildTree(startKnot);
         MPI_Finalize();
         return;
     }
@@ -164,20 +164,20 @@ void buildParallelTree(int argc, char const *argv[], struct knot *startKnot)
         struct gameboard *sendBuffer = malloc(sizeof(*sendBuffer) * currentKnotsCount);
         int *sendCnts;
         int *displacements;
-        int *recvBuffer;
+        struct gameboard *recvBuffer;
         int recvCnt;
         struct gameboard (*gameboardRecvBuffer)[BOARD_WIDTH + 1];
         if (rank == 0)
         {
             for (int i = 0; i < currentKnotsCount; i++)
             {
-                sendBuffer[i] = currentKnots[i]->gameboard;
+                sendBuffer[i] = *(currentKnots[i]->gameboard);
             }
 
             int knotsPerProcess = currentKnotsCount / worldSize;
             int displacement = 0;
             //TODO Limit zum senden
-            for(i = 0; i < worldSize; i++)
+            for(int i = 0; i < worldSize; i++)
             {
                 int j = knotsPerProcess;
                 if (rank < currentKnotsCount % worldSize)
@@ -190,7 +190,7 @@ void buildParallelTree(int argc, char const *argv[], struct knot *startKnot)
             }
         }
 
-        MPI_Scatter(sendCnts, 1, MPI_INT, &recvCnt, MPI_INT, 0, MPI_COMM_WORLD);
+        MPI_Scatter(sendCnts, 1, MPI_INT, &recvCnt, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
         recvBuffer = malloc(sizeof(*recvBuffer) * recvCnt);
         MPI_Scatterv(sendBuffer, sendCnts, displacements, MPI_GAMEBOARD,
@@ -199,20 +199,22 @@ void buildParallelTree(int argc, char const *argv[], struct knot *startKnot)
         struct gameboard (*toSendGameboards)[BOARD_WIDTH + 1] = malloc(sizeof(toSendGameboards[0]) * recvCnt);
         for (int i = 0; i < recvCnt; i++)
         {
-            struct gameboard *currentBoard = recvBuffer + i;
-            toSendGameboards[i][0] = currentBoard;
+            struct gameboard *currentBoard = &recvBuffer[i];
+            toSendGameboards[i][0] = *currentBoard;
             for (int j = 0; j < BOARD_WIDTH; j++)
             {
                 struct gameboard *createdBoard = put(currentBoard, j);
                 toSendGameboards[i][j + 1] = (createdBoard) ? *createdBoard : zeroBoard;
+                free(createdBoard);
             }
         }
+        free(recvBuffer);
 
         if (rank == 0)
         {
             gameboardRecvBuffer = malloc(sizeof(gameboardRecvBuffer[0]) * currentKnotsCount);
         }
-        MPI_Gatherv(toSendGameboards, sendCnts[rank], MPI_GAMEBOARD_ARRAY, gameboardRecvBuffer, sendCnts, displacements, MPI_GAMEBOARD_ARRAY, 0, MPI_COMM_WORLD);
+        MPI_Gatherv(toSendGameboards, recvCnt, MPI_GAMEBOARD_ARRAY, gameboardRecvBuffer, sendCnts, displacements, MPI_GAMEBOARD_ARRAY, 0, MPI_COMM_WORLD);
 
         if (rank == 0)
         {
@@ -230,16 +232,17 @@ void buildParallelTree(int argc, char const *argv[], struct knot *startKnot)
                         break;
                     }
                     struct knot *successor = malloc(sizeof(*successor));
-                    successor->gameboard = gameboardRecvBuffer[i][j];
+                    successor->gameboard = malloc(sizeof(*(successor->gameboard)));
+                    *(successor->gameboard) = gameboardRecvBuffer[i][j];
                     calculateHash(successor);
                     int duplicateIndex = pCheckForDuplicate(successor);
                     if (duplicateIndex < 0)
                     {
-                        successor->successors = malloc(sizeof(successor->successors) * boardWidth)
+                        successor->successors = malloc(sizeof(successor->successors) * boardWidth);
                         successor->successorsCount = 0;
                         nextKnots[nextKnotsCount] = successor;
                         nextKnotsCount += 1;
-                        printKnot(successor);
+                        printKnot(successor, "Late Successor");
                     }
                     else
                     {
@@ -251,7 +254,7 @@ void buildParallelTree(int argc, char const *argv[], struct knot *startKnot)
                 }
                 if (predecessor->successorsCount > 0)
                 {
-                    realloc(predecessor->successors, sizeof(predecessor->successors[0]) * predecessor->successorsCount)
+                    realloc(predecessor->successors, sizeof(predecessor->successors[0]) * predecessor->successorsCount);
                 }
                 else
                 {
@@ -262,7 +265,7 @@ void buildParallelTree(int argc, char const *argv[], struct knot *startKnot)
             free(gameboardRecvBuffer);
             if (nextKnotsCount > 0)
             {
-                realloc(nextKnots, sizeof(nextKnots[0]) * nextKnotsCount)
+                realloc(nextKnots, sizeof(nextKnots[0]) * nextKnotsCount);
             }
             else
             {
@@ -271,14 +274,6 @@ void buildParallelTree(int argc, char const *argv[], struct knot *startKnot)
             }
             currentKnots = nextKnots;
             currentKnotsCount = nextKnotsCount;
-        }
-
-        for (int i = 0; i < sendCnts[rank]; i++)
-        {
-            for (int j = 0; j < (BOARD_WIDTH + 1); j++)
-            {
-                free(toSendGameboards[i][j]);
-            }
         }
         free(toSendGameboards);
     }

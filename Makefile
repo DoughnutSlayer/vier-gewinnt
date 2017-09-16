@@ -21,10 +21,10 @@ calculateSequentialWinPercentage.o : calculateSequentialWinPercentage.c $(DEPS)
 	$(CC) $(CFLAGS) -c calculateSequentialWinPercentage.c
 
 createParallelTree.o : createParallelTree.c $(DEPS)
-$(CC) $(CFLAGS) -c createParallelTree.c
+	$(CC) $(CFLAGS) -c createParallelTree.c
 
 createSequentialTree.o : createSequentialTree.c $(DEPS)
-$(CC) $(CFLAGS) -c createSequentialTree.c
+	$(CC) $(CFLAGS) -c createSequentialTree.c
 
 gameboard.o : gameboard.c $(DEPS)
 	$(CC) $(CFLAGS) -c gameboard.c
