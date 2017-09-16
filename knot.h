@@ -5,8 +5,6 @@
 
 struct knot
 {
-    struct knot **predecessors;
-    int predecessorsCount;
     struct knot **successors;
     int successorsCount;
     struct gameboard *gameboard;
