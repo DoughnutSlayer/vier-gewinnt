@@ -6,19 +6,20 @@ ifndef BOARD_HEIGHT
 	BOARD_HEIGHT = 4
 endif
 
-ifndef CC
-	CC = gcc
-endif
+CC = mpicc
 
-CFLAGS = -Wall -std=c99 -DBOARD_WIDTH=$(BOARD_WIDTH) -DBOARD_HEIGHT=$(BOARD_HEIGHT)
-DEPS = createSequentialTree.h gameboard.h knot.h testHelp.h calculateSequentialWinPercentage.h
-OBJS = createSequentialTree.o gameboard.o knot.o testHelp.o calculateSequentialWinPercentage.o testSequentialCalculateWinpercentage.o
+CFLAGS = -Wall -g -std=c99 -DBOARD_WIDTH=$(BOARD_WIDTH) -DBOARD_HEIGHT=$(BOARD_HEIGHT)
+DEPS = createParallelTree.h createSequentialTree.h gameboard.h knot.h testHelp.h calculateSequentialWinPercentage.h
+OBJS = createParallelTree.o createSequentialTree.o gameboard.o knot.o testHelp.o calculateSequentialWinPercentage.o testCreateParallelTree.o
 
-testSequentialCalculateWinpercentage : $(OBJS)
-	$(CC) $(CFLAGS) -o testSequentialCalculateWinpercentage $(OBJS)
+testCreateParallelTree : $(OBJS)
+	$(CC) $(CFLAGS) -o testCreateParallelTree $(OBJS)
 
 calculateSequentialWinPercentage.o : calculateSequentialWinPercentage.c $(DEPS)
 	$(CC) $(CFLAGS) -c calculateSequentialWinPercentage.c
+
+createParallelTree.o : createParallelTree.c $(DEPS)
+	$(CC) $(CFLAGS) -c createParallelTree.c
 
 createSequentialTree.o : createSequentialTree.c $(DEPS)
 	$(CC) $(CFLAGS) -c createSequentialTree.c
@@ -32,8 +33,8 @@ knot.o : knot.c $(DEPS)
 testHelp.o : testHelp.c $(DEPS)
 	$(CC) $(CFLAGS) -c testHelp.c
 
-testSequentialCalculateWinpercentage.o : testSequentialCalculateWinpercentage.c $(DEPS)
-	$(CC) $(CFLAGS) -c testSequentialCalculateWinpercentage.c
+testCreateParallelTree.o : testCreateParallelTree.c $(DEPS)
+	$(CC) $(CFLAGS) -c testCreateParallelTree.c
 
 .PHONY : all
 all :
@@ -41,4 +42,4 @@ all :
 
 .PHONY : clean
 clean :
-	rm -f $(OBJS) testSequentialCalculateWinpercentage.exe
+	rm -f $(OBJS) testCreateParallelTree.exe
