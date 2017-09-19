@@ -187,7 +187,7 @@ void buildParallelTree(int argc, char *argv[], struct knot *startKnot)
             for(int i = 0; i < worldSize; i++)
             {
                 int sendCount = knotsPerProcess;
-                if (rank < currentKnotsCount % worldSize)
+                if (i < currentKnotsCount % worldSize)
                 {
                     sendCount += 1;
                 }
