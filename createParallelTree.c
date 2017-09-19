@@ -220,6 +220,9 @@ void buildParallelTree(int argc, char *argv[], struct knot *startKnot)
             resultRecvBuffer = malloc(sizeof(resultRecvBuffer[0]) * currentKnotsCount);
         }
         MPI_Gatherv(resultSendBuffer, recvCnt, MPI_GAMEBOARD_ARRAY, resultRecvBuffer, sendCnts, displacements, MPI_GAMEBOARD_ARRAY, 0, MPI_COMM_WORLD);
+        free(sendCnts);
+        free(displacements);
+        free(resultSendBuffer);
 
         if (rank == 0)
         {
