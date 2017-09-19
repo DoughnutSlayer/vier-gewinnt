@@ -168,7 +168,7 @@ void buildParallelTree(int argc, char *argv[], struct knot *startKnot)
     while (!treeFinished)
     {
         printf("Neue Runde, Neues Glück!\n");
-        struct gameboard *sendBuffer = malloc(sizeof(*sendBuffer) * (currentKnotsCount + 2));
+        struct gameboard *sendBuffer = malloc(sizeof(*sendBuffer) * (currentKnotsCount));
         int *sendCnts = malloc(sizeof(*sendCnts) * worldSize);
         int *displacements = malloc(sizeof(*sendCnts) * worldSize);
         struct gameboard *recvBuffer;
@@ -177,23 +177,15 @@ void buildParallelTree(int argc, char *argv[], struct knot *startKnot)
 
         if (rank == 0)
         {
-            printf("Current Knots: %d", currentKnotsCount);
             for (int i = 0; i < currentKnotsCount; i++)
             {
                 sendBuffer[i] = *(currentKnots[i]->gameboard);
             }
 
             int knotsPerProcess = currentKnotsCount / worldSize;
-            int displacement = knotsPerProcess;
-            if (0 < currentKnotsCount % worldSize)
-            {
-                displacement++;
-            }
-            recvCnt = displacement;
-            sendCnts[0] = recvCnt;
-            displacements[0] = 0;
+            int displacement = 0;
             //TODO Limit zum senden
-            for(int i = 1; i < worldSize; i++)
+            for(int i = 0; i < worldSize; i++)
             {
                 int sendCount = knotsPerProcess;
                 if (rank < currentKnotsCount % worldSize)
@@ -201,42 +193,14 @@ void buildParallelTree(int argc, char *argv[], struct knot *startKnot)
                     sendCount += 1;
                 }
                 sendCnts[i] = sendCount;
-                MPI_Send(&sendCount, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
-                for (int j = 0; j < sendCount; j++)
-                {
-                    MPI_Send(&(sendBuffer[displacement + j]), 1, MPI_GAMEBOARD, i, 1, MPI_COMM_WORLD);
-                }
                 displacements[i] = displacement;
                 displacement += sendCount;
             }
             //free(sendBuffer);
         }
-        else
-        {
-            MPI_Recv(&recvCnt, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, &status);
-            int tempR = rank;
-            int tempC = recvCnt;
-            recvBuffer = (struct gameboard *) malloc(sizeof(*recvBuffer) * recvCnt);
-            for (int i = 0; i < recvCnt; i++)
-            {
-                struct gameboard receivedBoard;
-                MPI_Recv(&receivedBoard, 1, MPI_GAMEBOARD, 0, 1, MPI_COMM_WORLD, &status);
-                recvBuffer[i] = receivedBoard;
-            }
-            rank = tempR;
-            recvCnt = tempC;
-        }
-
-        /*if (rank == 1)
-        {
-            printf("RAW:");
-            int *buf = (int *) recvBuffer;
-            for (int i = 0; i < (sizeof(struct gameboard) / sizeof(int)) * recvCnt; i++)
-            {
-                printf("%d", buf[i]);
-            }
-            printf("\n");
-        }*/
+        MPI_Scatter(sendCnts, 1, MPI_INT, &recvCnt, 1, MPI_INT, 0, MPI_COMM_WORLD);
+        recvBuffer = (struct gameboard *) malloc(sizeof(*recvBuffer) * recvCnt);
+        MPI_Scatterv(sendBuffer, sendCnts, displacements, MPI_GAMEBOARD, recvBuffer, recvCnt, MPI_GAMEBOARD, 0, MPI_COMM_WORLD);
 
         if (rank > 0)
         {
