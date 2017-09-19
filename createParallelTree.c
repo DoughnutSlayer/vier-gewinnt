@@ -239,7 +239,7 @@ void buildParallelTree(int argc, char *argv[], struct knot *startKnot)
                 {
                     if (resultRecvBuffer[i][j].nextPlayer == 0)
                     {
-                        break;
+                        continue;
                     }
                     struct knot *successor = malloc(sizeof(*successor));
                     successor->gameboard = malloc(sizeof(*(successor->gameboard)));
