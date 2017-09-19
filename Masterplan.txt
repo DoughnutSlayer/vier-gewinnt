@@ -15,6 +15,9 @@
   Ist die Anzahl der Knoten kleiner X*Prozesse so werden je X/Prozesse Prozesse verteilt
 
   Unterprozesse Prüfen ob Knoten-Gameboard wonby und erzeugen nachknoten und schicken das an master / queue 2
+  Baum in einem Array mit relativen Adressen
+  Beim nächsten mal bei Yu-Gi-Oh... Winchances parallel, KI, Konsolenspielbar
+  Danach... GUI und Statistiken
 
   3. Algorithmus zum Winchance berechnen bauen
   Rekursiv

@@ -18,4 +18,5 @@ void calculateHash(struct knot *knot)
             knot->gameboardHash[index] = buffer[0];
         }
     }
+    knot->gameboardHash[boardWidth * boardHeight] = '\0';
 }

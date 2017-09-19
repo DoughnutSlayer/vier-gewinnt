@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include "gameboard.h"
 #include "knot.h"
-#include "testHelp.h"
 
 void calculateWinPercentage(struct knot *knot)
 {
@@ -20,7 +19,6 @@ void calculateWinPercentage(struct knot *knot)
         {
             knot->winPercentage = 0;
         }
-        printKnot(knot, "Leaf");
         return;
     }
 
@@ -31,5 +29,4 @@ void calculateWinPercentage(struct knot *knot)
         winPercentageSum += knot->successors[i]->winPercentage;
     }
     knot->winPercentage = winPercentageSum / knot->successorsCount;
-    printKnot(knot, "Branch");
 }

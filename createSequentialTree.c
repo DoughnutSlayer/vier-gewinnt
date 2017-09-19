@@ -39,9 +39,6 @@ void setSuccessorsOf(struct knot *knot)
             int duplicateSuccessorIndex = checkForDuplicate(successor);
             if(duplicateSuccessorIndex == -1)
             {
-                successor->predecessors = malloc(sizeof(knot));
-                successor->predecessors[0] = knot;
-                successor->predecessorsCount = 1;
                 successor->winPercentage = -1;
                 knot->successors[knot->successorsCount] = successor;
                 nextKnots[nextKnotsCount] = successor;
@@ -51,9 +48,6 @@ void setSuccessorsOf(struct knot *knot)
             {
                 free(successor);
                 successor = nextKnots[duplicateSuccessorIndex];
-                successor->predecessorsCount++;
-                successor->predecessors = realloc(successor->predecessors, sizeof(knot) * successor->predecessorsCount);
-                successor->predecessors[successor->predecessorsCount - 1] = knot;
                 knot->successors[knot->successorsCount] = successor;
             }
             knot->successorsCount++;
