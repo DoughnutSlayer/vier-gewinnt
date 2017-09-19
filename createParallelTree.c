@@ -167,19 +167,19 @@ void buildParallelTree(int argc, char *argv[], struct knot *startKnot)
     int treeFinished = 0;
     while (!treeFinished)
     {
-        printf("Neue Runde, Neues Glück!\n");
-        struct gameboard *sendBuffer = malloc(sizeof(*sendBuffer) * (currentKnotsCount));
+        struct gameboard *taskSendBuffer = malloc(sizeof(*taskSendBuffer) * (currentKnotsCount));
         int *sendCnts = malloc(sizeof(*sendCnts) * worldSize);
         int *displacements = malloc(sizeof(*sendCnts) * worldSize);
-        struct gameboard *recvBuffer;
+        struct gameboard *taskRecvBuffer;
         int recvCnt;
-        struct gameboard (*gameboardRecvBuffer)[BOARD_WIDTH + 1];
+        struct gameboard (*resultSendBuffer)[BOARD_WIDTH + 1];
+        struct gameboard (*resultRecvBuffer)[BOARD_WIDTH + 1];
 
         if (rank == 0)
         {
             for (int i = 0; i < currentKnotsCount; i++)
             {
-                sendBuffer[i] = *(currentKnots[i]->gameboard);
+                taskSendBuffer[i] = *(currentKnots[i]->gameboard);
             }
 
             int knotsPerProcess = currentKnotsCount / worldSize;
@@ -196,62 +196,37 @@ void buildParallelTree(int argc, char *argv[], struct knot *startKnot)
                 displacements[i] = displacement;
                 displacement += sendCount;
             }
-            //free(sendBuffer);
         }
         MPI_Scatter(sendCnts, 1, MPI_INT, &recvCnt, 1, MPI_INT, 0, MPI_COMM_WORLD);
-        recvBuffer = (struct gameboard *) malloc(sizeof(*recvBuffer) * recvCnt);
-        MPI_Scatterv(sendBuffer, sendCnts, displacements, MPI_GAMEBOARD, recvBuffer, recvCnt, MPI_GAMEBOARD, 0, MPI_COMM_WORLD);
+        taskRecvBuffer = (struct gameboard *) malloc(sizeof(*taskRecvBuffer) * recvCnt);
+        MPI_Scatterv(taskSendBuffer, sendCnts, displacements, MPI_GAMEBOARD, taskRecvBuffer, recvCnt, MPI_GAMEBOARD, 0, MPI_COMM_WORLD);
+        free(taskSendBuffer);
 
-        if (rank > 0)
+        resultSendBuffer = malloc(sizeof(resultSendBuffer[0]) * recvCnt);
+        for (int i = 0; i < recvCnt; i++)
         {
-            for (int i = 0; i < recvCnt; i++)
+            struct gameboard *currentBoard = &taskRecvBuffer[0];
+            resultSendBuffer[i][0] = *currentBoard;
+            for (int j = 0; j < BOARD_WIDTH; j++)
             {
-                struct gameboard boardArray[BOARD_WIDTH + 1];
-                struct gameboard *currentBoard = &recvBuffer[0];
-                boardArray[0] = *currentBoard;
-                for (int j = 0; j < BOARD_WIDTH; j++)
-                {
-                    struct gameboard *createdBoard = put(currentBoard, j);
-                    boardArray[j + 1] = (createdBoard) ? *createdBoard : zeroBoard;
-                    free(createdBoard);
-                }
-                MPI_Send(&boardArray, 1, MPI_GAMEBOARD_ARRAY, 0, 2, MPI_COMM_WORLD);
-            }
-            free(recvBuffer);
-        }
-        else
-        {
-            gameboardRecvBuffer = malloc(sizeof(gameboardRecvBuffer[0]) * currentKnotsCount);
-            for(int i = 0; i < recvCnt; i++)
-            {
-                gameboardRecvBuffer[i][0] = *(currentKnots[i]->gameboard);
-                for(int j = 0; j < BOARD_WIDTH; j++)
-                {
-                struct gameboard *createdBoard = put(currentKnots[i]->gameboard, j);
-                gameboardRecvBuffer[i][j + 1] = (createdBoard) ? *createdBoard : zeroBoard;
-                //free(createdBoard);
-                }
-            }
-
-            for (int i = 1; i < worldSize; i++)
-            {
-                for (int j = 0; j < sendCnts[i]; j++)
-                {
-                    struct gameboard boardArray[BOARD_WIDTH + 1];
-                    MPI_Recv(&boardArray, 1, MPI_GAMEBOARD_ARRAY, i, 2, MPI_COMM_WORLD, &status);
-                    for (int k = 0; k < boardWidth + 1; k++)
-                    {
-                        gameboardRecvBuffer[displacements[i] + j][k] = boardArray[k];
-                    }
-                }
+                struct gameboard *createdBoard = put(currentBoard, j);
+                resultSendBuffer[i][j + 1] = (createdBoard) ? *createdBoard : zeroBoard;
+                free(createdBoard);
             }
         }
+        free(taskRecvBuffer);
+
+        if (rank == 0)
+        {
+            resultRecvBuffer = malloc(sizeof(resultRecvBuffer[0]) * currentKnotsCount);
+        }
+        MPI_Gatherv(resultSendBuffer, recvCnt, MPI_GAMEBOARD_ARRAY, resultRecvBuffer, sendCnts, displacements, MPI_GAMEBOARD_ARRAY, 0, MPI_COMM_WORLD);
 
         if (rank == 0)
         {
             for (int i = 0; i < currentKnotsCount; i++)
             {
-                struct knot *predecessor = getCurrentKnot(&(gameboardRecvBuffer[i][0]));
+                struct knot *predecessor = getCurrentKnot(&(resultRecvBuffer[i][0]));
                 predecessor->successors = malloc(sizeof(predecessor->successors) * boardWidth);
                 predecessor->successorsCount = 0;
                 if (!predecessor)
@@ -260,13 +235,13 @@ void buildParallelTree(int argc, char *argv[], struct knot *startKnot)
                 }
                 for (int j = 1; j < (boardWidth + 1); j++)
                 {
-                    if (gameboardRecvBuffer[i][j].nextPlayer == 0)
+                    if (resultRecvBuffer[i][j].nextPlayer == 0)
                     {
                         break;
                     }
                     struct knot *successor = malloc(sizeof(*successor));
                     successor->gameboard = malloc(sizeof(*(successor->gameboard)));
-                    *(successor->gameboard) = gameboardRecvBuffer[i][j];
+                    *(successor->gameboard) = resultRecvBuffer[i][j];
                     calculateHash(successor);
                     int duplicateIndex = pCheckForDuplicate(successor);
                     if (duplicateIndex < 0)
@@ -288,7 +263,7 @@ void buildParallelTree(int argc, char *argv[], struct knot *startKnot)
                     predecessor->successors = NULL;
                 }
             }
-            free(gameboardRecvBuffer);
+            free(resultRecvBuffer);
             if (nextKnotsCount == 0)
             {
                 free(nextKnots);
