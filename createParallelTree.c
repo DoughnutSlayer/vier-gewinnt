@@ -246,15 +246,15 @@ void buildParallelTree(int argc, char *argv[], struct knot *startKnot)
                     *(successor->gameboard) = resultRecvBuffer[i][j];
                     calculateHash(successor);
                     int duplicateIndex = pCheckForDuplicate(successor);
-                    if (duplicateIndex < 0)
-                    {
-                        nextKnots[nextKnotsCount] = successor;
-                        nextKnotsCount += 1;
-                    }
-                    else
+                    if (duplicateIndex >= 0)
                     {
                         free(successor);
                         successor = nextKnots[duplicateIndex];
+                    }
+                    else if (!successor->gameboard->isWonBy)
+                    {
+                        nextKnots[nextKnotsCount] = successor;
+                        nextKnotsCount += 1;
                     }
                     predecessor->successors[predecessor->successorsCount] = successor;
                     predecessor->successorsCount += 1;
