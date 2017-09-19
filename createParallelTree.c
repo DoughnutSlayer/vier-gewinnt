@@ -278,11 +278,6 @@ void buildParallelTree(int argc, char *argv[], struct knot *startKnot)
         if (rank == 0 && !currentKnots)
         {
             treeFinished = 1;
-            printf("Tree Finished!\n");
-        }
-        else
-        {
-            treeFinished = 0;
         }
         if (rank == 0)
         {
