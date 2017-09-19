@@ -279,19 +279,7 @@ void buildParallelTree(int argc, char *argv[], struct knot *startKnot)
         {
             treeFinished = 1;
         }
-        if (rank == 0)
-        {
-            for (int i = 0; i < worldSize; i++)
-            {
-                MPI_Send(&treeFinished, 1, MPI_INT, i, 3, MPI_COMM_WORLD);
-            }
-        }
-        else
-        {
-            int temp = 0;
-            MPI_Recv(&temp, 1, MPI_INT, 0, 3, MPI_COMM_WORLD, &status);
-            treeFinished = temp;
-        }
+        MPI_Bcast(&treeFinished, 1, MPI_INT, 0, MPI_COMM_WORLD);
     }
     MPI_Finalize();
 }
