@@ -137,9 +137,9 @@ void buildParallelTree(int argc, char *argv[], struct knot *startKnot)
     }
 
     MPI_Datatype MPI_GAMEBOARD, MPI_GAMEBOARD_ARRAY;
-    int boardBlocklengths[3] = {sizeof(((struct gameboard*)0)->lanes),
-        sizeof(((struct gameboard*)0)->isWonBy),
-        sizeof(((struct gameboard*)0)->nextPlayer)};
+    int boardBlocklengths[3] = {sizeof(((struct gameboard*)0)->lanes) / sizeof(int),
+        sizeof(((struct gameboard*)0)->isWonBy) / sizeof(int),
+        sizeof(((struct gameboard*)0)->nextPlayer) / sizeof(int)};
     MPI_Aint boardDisplacements[3] = {offsetof(struct gameboard, lanes),
         offsetof(struct gameboard, isWonBy),
         offsetof(struct gameboard, nextPlayer)};
