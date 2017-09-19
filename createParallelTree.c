@@ -285,14 +285,6 @@ void buildParallelTree(int argc, char *argv[], struct knot *startKnot)
             {
                 MPI_Send(&treeFinished, 1, MPI_INT, i, 3, MPI_COMM_WORLD);
             }
-            for (int i = 0; i < currentKnotsCount; i++)
-            {
-                printGameboard(currentKnots[i]->gameboard, "Current Knot");
-            }
-            for (int i = 0; i < nextKnotsCount   ; i++)
-            {
-                printGameboard(nextKnots[i]->gameboard, "Next Knot");
-            }
         }
         else
         {
@@ -300,7 +292,6 @@ void buildParallelTree(int argc, char *argv[], struct knot *startKnot)
             MPI_Recv(&temp, 1, MPI_INT, 0, 3, MPI_COMM_WORLD, &status);
             treeFinished = temp;
         }
-        printf("Durchgang beendet! Rank %d, Tree Finished = %d\n", rank, treeFinished);
     }
     MPI_Finalize();
 }
