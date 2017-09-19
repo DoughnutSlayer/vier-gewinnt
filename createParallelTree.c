@@ -204,7 +204,7 @@ void buildParallelTree(int argc, char *argv[], struct knot *startKnot)
         resultSendBuffer = malloc(sizeof(resultSendBuffer[0]) * recvCnt);
         for (int i = 0; i < recvCnt; i++)
         {
-            struct gameboard *currentBoard = &taskRecvBuffer[0];
+            struct gameboard *currentBoard = &taskRecvBuffer[i];
             resultSendBuffer[i][0] = *currentBoard;
             for (int j = 0; j < BOARD_WIDTH; j++)
             {
