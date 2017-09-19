@@ -23,13 +23,13 @@ int nextKnotsCount;
 
 int pCheckForDuplicate(struct knot *knot)
 {
-    /*for (int i = 0; i < nextKnotsCount; i++)
+    for (int i = 0; i < nextKnotsCount; i++)
     {
         if (!strcmp(nextKnots[i]->gameboardHash, knot->gameboardHash))
         {
             return i;
         }
-    }*/
+    }
     return -1;
 }
 
