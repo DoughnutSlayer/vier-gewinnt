@@ -6,9 +6,7 @@ ifndef BOARD_HEIGHT
 	BOARD_HEIGHT = 4
 endif
 
-ifndef CC
-	CC = mpicc
-endif
+CC = mpicc
 
 CFLAGS = -Wall -g -std=c99 -DBOARD_WIDTH=$(BOARD_WIDTH) -DBOARD_HEIGHT=$(BOARD_HEIGHT)
 DEPS = createParallelTree.h createSequentialTree.h gameboard.h knot.h testHelp.h calculateSequentialWinPercentage.h
