@@ -3,6 +3,6 @@
 
 #include "knot.h"
 
-void buildParallelTree(int argc, char *argv[], struct knot *startKnot);
+void buildParallelTree(struct knot *startKnot);
 
 #endif
