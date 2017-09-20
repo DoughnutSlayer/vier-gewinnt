@@ -42,4 +42,4 @@ all :
 
 .PHONY : clean
 clean :
-	rm -f $(OBJS) testCreateParallelTree.exe
+	rm -f $(OBJS) testCreateParallelTree testCreateParallelTree.exe
