@@ -6,7 +6,6 @@
 #include "createSequentialTree.h"
 #include "gameboard.h"
 #include "knot.h"
-#include "testHelp.h"
 
 extern const int boardWidth;
 
@@ -124,14 +123,12 @@ struct knot *getCurrentKnot(struct gameboard *board)
 
 void buildParallelTree(int argc, char *argv[], struct knot *startKnot)
 {
-    MPI_Init(&argc, &argv);
     int worldSize, rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &worldSize);
     if (worldSize == 1)
     {
         buildTree(startKnot);
-        MPI_Finalize();
         return;
     }
 
@@ -283,5 +280,4 @@ void buildParallelTree(int argc, char *argv[], struct knot *startKnot)
         }
         MPI_Bcast(&treeFinished, 1, MPI_INT, 0, MPI_COMM_WORLD);
     }
-    MPI_Finalize();
 }
