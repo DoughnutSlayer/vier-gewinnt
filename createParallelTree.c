@@ -121,7 +121,7 @@ struct knot *getCurrentKnot(struct gameboard *board)
     MPI_Type_commit(boardArrayType);
 }*/
 
-void buildParallelTree(int argc, char *argv[], struct knot *startKnot)
+void buildParallelTree(struct knot *startKnot)
 {
     int worldSize, rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
