@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
 
     MPI_Init(&argc, &argv);
 
-    buildParallelTree(argc, argv, root);
+    buildParallelTree(root);
 
     MPI_Finalize();
     return 0;
