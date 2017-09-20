@@ -254,6 +254,17 @@ void buildParallelTree(struct knot *startKnot)
                         nextKnots[nextKnotsCount] = successor;
                         nextKnotsCount += 1;
                     }
+                    else
+                    {
+                        if (successor->gameboard->isWonBy == 2)
+                        {
+                            successor->winPercentage = 100;
+                        }
+                        else
+                        {
+                            successor->winPercentage = 0;
+                        }
+                    }
                     predecessor->successors[predecessor->successorsCount] = successor;
                     predecessor->successorsCount += 1;
                 }
