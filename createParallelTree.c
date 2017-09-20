@@ -6,6 +6,7 @@
 #include "createSequentialTree.h"
 #include "gameboard.h"
 #include "knot.h"
+#include "testHelp.h"
 
 extern const int boardWidth;
 
