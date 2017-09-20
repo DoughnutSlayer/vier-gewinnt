@@ -105,22 +105,24 @@ struct knot *getCurrentKnot(struct gameboard *board)
     return NULL;
 }
 
-/*void initMpiTypes(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
+void refreshQueues()
 {
-    int boardBlocklengths[3] = {sizeof(((struct gameboard*)0)->lanes),
-        sizeof(((struct gameboard*)0)->isWonBy),
-        sizeof(((struct gameboard*)0)->nextPlayer)};
-    MPI_Aint boardDisplacements[3] = {offsetof(struct gameboard, lanes),
-        offsetof(struct gameboard, isWonBy),
-        offsetof(struct gameboard, nextPlayer)};
-    MPI_Datatype boardTypes[3] = {MPI_INT, MPI_INT, MPI_INT};
-    MPI_Type_create_struct(3, boardBlocklengths, boardDisplacements,
-        boardTypes, boardType);
-    MPI_Type_commit(boardType);
+    turns[turnCounter] = currentKnots;
+    turnSizes[turnCounter] = currentKnotsCount;
+    turnCounter++;
+    currentKnots = nextKnots;
+    currentKnotsCount = nextKnotsCount;
+    nextKnots = malloc(sizeof(nextKnots[0]) * currentKnotsCount * boardWidth);
+    nextKnotsCount = 0;
+}
 
-    MPI_Type_contiguous(boardWidth + 1, *boardType, boardArrayType);
-    MPI_Type_commit(boardArrayType);
-}*/
+void pInitializeQueues(struct knot *root)
+{
+    currentKnots = malloc(sizeof(root));
+    currentKnots[0] = root;
+    currentKnotsCount = 1;
+    pSetNextKnots(currentKnots);
+}
 
 void buildParallelTree(struct knot *startKnot)
 {
@@ -150,15 +152,7 @@ void buildParallelTree(struct knot *startKnot)
 
     if (rank == 0)
     {
-        currentKnots = malloc(sizeof(startKnot));
-        currentKnots[0] = startKnot;
-        currentKnotsCount = 1;
-        pSetNextKnots(currentKnots);
-        currentKnots = nextKnots;
-        currentKnotsCount = nextKnotsCount;
-        nextKnots = malloc(sizeof(nextKnots[0]) * currentKnotsCount * boardWidth);
-        nextKnotsCount = 0;
-        //end of init
+        pInitializeQueues(startKnot);
     }
 
     int treeFinished = 0;
@@ -280,11 +274,7 @@ void buildParallelTree(struct knot *startKnot)
                 free(nextKnots);
                 nextKnots = NULL;
             }
-            currentKnots = NULL;
-            currentKnots = nextKnots;
-            currentKnotsCount = nextKnotsCount;
-            nextKnots = malloc(sizeof(nextKnots[0]) * currentKnotsCount * boardWidth);
-            nextKnotsCount = 0;
+            refreshQueues();
         }
         if (rank == 0 && !currentKnots)
         {
