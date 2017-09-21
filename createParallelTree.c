@@ -367,7 +367,7 @@ void buildParallelTree(struct knot *startKnot)
         free(taskRecvBuffer);
 
         resultRecvBuffer = malloc(sizeof(*resultRecvBuffer) * turnSizes[i]);
-        MPI_Gatherv(resultSendBuffer, recvCnt, MPI_WINCHANCE_ARRAY, resultRecvBuffer, sendCnts, displacements, MPI_WINCHANCE_ARRAY, 0, MPI_COMM_WORLD);
+        MPI_Gatherv(resultSendBuffer, recvCnt, MPI_DOUBLE, resultRecvBuffer, sendCnts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
         free(resultSendBuffer);
 
         if (rank == 0)
