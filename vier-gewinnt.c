@@ -79,6 +79,20 @@ int getNumberInput()
     return input;
 }
 
+void makePlayerTurn()
+{
+
+    struct gameboard *result = NULL;
+    result = put(playerKnot.gameboard, getNumberInput());
+    while (!result)
+    {
+        printf("%s", invalidInputMessage);
+        result = put(playerKnot.gameboard, getNumberInput());
+    }
+    *(playerKnot.gameboard) = *result;
+    free(result);
+}
+
 int main(int argc, char *argv[])
 {
     sprintf(&invalidInputMessage, "Please enter a number between 0 and %d: ", boardWidth - 1);
