@@ -377,6 +377,5 @@ void buildParallelTree(struct knot *startKnot)
             }
         }
         free(resultRecvBuffer);
-        break;
     }
 }
