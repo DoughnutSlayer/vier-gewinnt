@@ -375,6 +375,7 @@ void buildParallelTree(struct knot *startKnot)
             for (int j = 0; j < turnSizes[i]; j++)
             {
                 //printf("Result %d = %f\n", j, resultRecvBuffer[j]);
+                turns[i][j]->winPercentage = resultRecvBuffer[j];
             }
         }
         free(resultRecvBuffer);
