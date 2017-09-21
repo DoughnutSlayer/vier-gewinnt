@@ -303,7 +303,7 @@ void buildParallelTree(struct knot *startKnot)
     double *resultRecvBuffer;
     turnCounter--;
     MPI_Bcast(&turnCounter, 1, MPI_INT, 0, MPI_COMM_WORLD);
-    for (int i = turnCounter; i > 0; i--)
+    for (int i = turnCounter; i >= 0; i--)
     {
         taskSendBuffer = malloc(sizeof(*taskSendBuffer) * turnSizes[i]);
         if (rank == 0)
