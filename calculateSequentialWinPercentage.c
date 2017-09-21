@@ -24,12 +24,23 @@ void calculateWinPercentage(struct knot *knot)
         return;
     }
 
-    double winPercentageSum = 0;
+    double result = 0;
     for (int i = 0; i < knot->successorsCount; i++)
     {
         calculateWinPercentage(knot->successors[i]);
-        winPercentageSum += knot->successors[i]->winPercentage;
+        if (knot->gameboard->nextPlayer == 1)
+        {
+            result += knot->successors[i]->winPercentage;
+        }
+        else
+        {
+            result = (result > knot->successors[i]->winPercentage) ? result : knot->successors[i]->winPercentage;
+        }
     }
-    knot->winPercentage = winPercentageSum / knot->successorsCount;
+    if (knot->gameboard->nextPlayer == 1)
+    {
+        result = result / knot->successorsCount;
+    }
     printKnot(knot, "Branch");
+    knot->winPercentage = result;
 }
