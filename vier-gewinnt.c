@@ -68,6 +68,7 @@ int main(int argc, char *argv[])
     struct gameboard emptyBoard = {0};
     emptyBoard.nextPlayer = 1;
     playerKnot.gameboard = &emptyBoard;
+    calculateHash(playerKnot);
 
     MPI_Init(&argc, &argv);
 
