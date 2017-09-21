@@ -20,7 +20,6 @@ void calculateWinPercentage(struct knot *knot)
         {
             knot->winPercentage = 0;
         }
-        printKnot(knot, "Leaf");
         return;
     }
 
@@ -41,6 +40,5 @@ void calculateWinPercentage(struct knot *knot)
     {
         result = result / knot->successorsCount;
     }
-    printKnot(knot, "Branch");
     knot->winPercentage = result;
 }
