@@ -341,6 +341,7 @@ void buildParallelTree(struct knot *startKnot)
         for (int j = 0; j < recvCnt; j++)
         {
             double result = 0;
+            int resultCount = 0;
             for (int k = 0; k < boardWidth; k++)
             {
                 if (taskRecvBuffer[j][k] < 0)
@@ -356,6 +357,10 @@ void buildParallelTree(struct knot *startKnot)
                     result += taskRecvBuffer[j][k];
                     resultCount++;
                 }
+            }
+            if (!(i % 2 == firstPlayer % 2))
+            {
+                result = result / resultCount;
             }
             resultSendBuffer[j] = result;
         }
