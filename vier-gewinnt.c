@@ -7,6 +7,8 @@
 
 extern const int boardWidth, boardHeight;
 
+char invalidInputMessage[42];
+
 struct knot playerKnot;
 
 void printPlayerPrompt()
@@ -60,15 +62,31 @@ void printPlayerPrompt()
         printf("┴───");
     }
     printf("┘\n");
-    printf("Enter where to put the next 'O':\n");
+    printf("Enter where to put the next 'O': ");
+}
+
+int getNumberInput()
+{
+    int validInput = 0;
+    int input;
+    validInput = scanf("%d", &input);
+    while (validInput <= 0)
+    {
+        printf("%s", invalidInputMessage);
+        fflush(NULL);
+        validInput = scanf("%d", &input);
+    }
+    return input;
 }
 
 int main(int argc, char *argv[])
 {
+    sprintf(&invalidInputMessage, "Please enter a number between 0 and %d: ", boardWidth - 1);
+
     struct gameboard emptyBoard = {0};
     emptyBoard.nextPlayer = 1;
     playerKnot.gameboard = &emptyBoard;
-    calculateHash(playerKnot);
+    calculateHash(&playerKnot);
 
     MPI_Init(&argc, &argv);
 
