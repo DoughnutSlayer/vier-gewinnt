@@ -347,7 +347,7 @@ void buildParallelTree(struct knot *startKnot)
                 {
                     break;
                 }
-                if (turnCounter % 2 == firstPlayer % 2)
+                if (i % 2 == firstPlayer % 2)
                 {
                     result += taskRecvBuffer[j][k];
                 }
