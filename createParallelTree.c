@@ -308,7 +308,6 @@ void buildParallelTree(struct knot *startKnot)
         taskSendBuffer = malloc(sizeof(*taskSendBuffer) * turnSizes[i]);
         if (rank == 0)
         {
-            printf("\n--Turn %d--\n\n", i);
             for (int j = 0; j < turnSizes[i]; j++)
             {
                 int successorsCount = turns[i][j]->successorsCount;
@@ -374,7 +373,6 @@ void buildParallelTree(struct knot *startKnot)
         {
             for (int j = 0; j < turnSizes[i]; j++)
             {
-                //printf("Result %d = %f\n", j, resultRecvBuffer[j]);
                 turns[i][j]->winPercentage = resultRecvBuffer[j];
             }
         }
