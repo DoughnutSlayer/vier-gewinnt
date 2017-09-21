@@ -340,7 +340,7 @@ void buildParallelTree(struct knot *startKnot)
         resultSendBuffer = malloc(sizeof(*resultSendBuffer) * recvCnt);
         for (int j = 0; j < recvCnt; j++)
         {
-            int result = 0;
+            double result = 0;
             for (int k = 0; k < boardWidth; k++)
             {
                 if (taskRecvBuffer[j][k] < 0)
