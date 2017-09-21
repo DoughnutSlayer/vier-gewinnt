@@ -4,11 +4,13 @@
 #include "gameboard.h"
 #include "knot.h"
 
+struct knot playerKnot;
+
 int main(int argc, char *argv[])
 {
-    struct gameboard *rootBoard = malloc(sizeof(*rootBoard));
-    initializeBoard(rootBoard);
-    struct knot *root = createKnot(rootBoard);
+    struct gameboard emptyBoard = {0};
+    emptyBoard.nextPlayer = 1;
+    playerKnot.gameboard = &emptyBoard;
 
     MPI_Init(&argc, &argv);
 
