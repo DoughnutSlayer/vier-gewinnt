@@ -109,6 +109,19 @@ struct knot *getCurrentKnot(struct gameboard *board)
     return NULL;
 }
 
+void setStartTurn(struct knot *startKnot)
+{
+    int index = 0;
+    while (startKnot->gameboardHash[index] != '\0')
+    {
+        if (startKnot->gameboardHash[index] != '0')
+        {
+            turnCounter++;
+        }
+        index++;
+    }
+}
+
 void refreshQueues()
 {
     turns[turnCounter] = currentKnots;
@@ -130,8 +143,7 @@ void pInitializeQueues(struct knot *root)
 
 void buildParallelTree(struct knot *startKnot)
 {
-    int worldSize, rank;
-    int firstPlayer = startKnot->gameboard->nextPlayer;
+    int worldSize, rank, firstPlayer;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &worldSize);
     if (worldSize == 1)
@@ -139,6 +151,13 @@ void buildParallelTree(struct knot *startKnot)
         buildTree(startKnot);
         return;
     }
+
+    if (rank == 0)
+    {
+        setStartTurn(startKnot);
+        firstPlayer = (startKnot->gameboard->nextPlayer - turnCounter % 2);
+    }
+    MPI_Bcast(&firstPlayer, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
     MPI_Datatype MPI_GAMEBOARD, MPI_GAMEBOARD_ARRAY;
     int boardBlocklengths[3] = {sizeof(((struct gameboard*)0)->lanes) / sizeof(int),
