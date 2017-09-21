@@ -1,10 +1,8 @@
 #include <stdlib.h>
-#include <stdio.h>
 #include "mpi.h"
 #include "createParallelTree.h"
 #include "gameboard.h"
 #include "knot.h"
-#include "testHelp.h"
 
 int main(int argc, char *argv[])
 {

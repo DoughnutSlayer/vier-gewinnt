@@ -2,12 +2,10 @@
 #include <mpi.h>
 #include <stddef.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 #include "createSequentialTree.h"
 #include "gameboard.h"
 #include "knot.h"
-#include "testHelp.h"
 
 extern const int boardWidth;
 

@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include "gameboard.h"
 #include "knot.h"
-#include "testHelp.h"
 
 void calculateWinPercentage(struct knot *knot)
 {
