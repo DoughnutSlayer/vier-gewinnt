@@ -349,11 +349,12 @@ void buildParallelTree(struct knot *startKnot)
                 }
                 if (i % 2 == firstPlayer % 2)
                 {
-                    result += taskRecvBuffer[j][k];
+                    result = fmax(result, taskRecvBuffer[j][k]);
                 }
                 else
                 {
-                    result = fmax(result, taskRecvBuffer[j][k]);
+                    result += taskRecvBuffer[j][k];
+                    resultCount++;
                 }
             }
             resultSendBuffer[j] = result;
