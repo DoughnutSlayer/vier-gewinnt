@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include "calculateSequentialWinPercentage.h"
 #include "gameboard.h"
 #include "knot.h"
 
@@ -108,4 +109,5 @@ void buildTree(struct knot *startKnot)
         setNextKnots();
     }
     //Hier sind die currentKnots die letzte Generation von Knoten
+    calculateWinPercentage(startKnot);
 }
