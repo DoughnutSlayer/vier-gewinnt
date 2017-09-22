@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "mpi.h"
 #include "createParallelTree.h"
 #include "gameboard.h"
@@ -118,8 +119,58 @@ int main(int argc, char *argv[])
         printPlayerPrompt();
         makePlayerTurn();
         printPlayerGameboard();
+        printf("Calculating...\n");
     }
+
     buildParallelTree(&playerKnot);
+
+    if (rank == 0)
+    {
+        printf("Resume\n");
+        while (!playerKnot.gameboard->isWonBy)
+        {
+            if (playerKnot.gameboard->nextPlayer == 1)
+            {
+                printPlayerPrompt();
+                makePlayerTurn();
+                for (int i = 0; i < playerKnot.successorsCount; i++)
+                {
+                    if (!strcmp(playerKnot.gameboardHash, playerKnot.successors[i]->gameboardHash))
+                    {
+                        playerKnot = *(playerKnot.successors[i]);
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                printPlayerGameboard();
+                int bestSuccessorIndex = 0;
+                //printf("Player Successors: %d\n", playerKnot.successorsCount);
+                for (int i = 1; i < playerKnot.successorsCount; i++)
+                {
+                    if (playerKnot.successors[bestSuccessorIndex]->winPercentage < playerKnot.successors[i]->winPercentage)
+                    {
+                        bestSuccessorIndex = i;
+                    }
+                }
+                playerKnot = *(playerKnot.successors[bestSuccessorIndex]);
+            }
+        }
+        printPlayerGameboard();
+        if (playerKnot.gameboard->isWonBy == 1)
+        {
+            printf("You Win!\n");
+        }
+        else if (playerKnot.gameboard->isWonBy == 2)
+        {
+            printf("You Lose!\n");
+        }
+        else if (playerKnot.gameboard->isWonBy == 2)
+        {
+            printf("It's a draw!\n");
+        }
+    }
 
     MPI_Finalize();
     return 0;

@@ -80,7 +80,7 @@ void pSetSuccessorsOf(struct knot *knot)
 
 void pSetNextKnots()
 {
-    nextKnots = malloc(sizeof(currentKnots) * currentKnotsCount * (boardWidth) * 4);
+    nextKnots = malloc(sizeof(currentKnots) * currentKnotsCount * (boardWidth) * 4); //TODO: remove 4
     for (int currentKnot = 0; currentKnot < currentKnotsCount; currentKnot++)
     {
         pSetSuccessorsOf(currentKnots[currentKnot]);
