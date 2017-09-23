@@ -186,7 +186,7 @@ void updateGameFinishedStatus(struct gameboard *board)
 
 struct gameboard *put(struct gameboard *board, int laneIndex)
 {
-    if (board->isWonBy)
+    if (board->isWonBy || laneIndex < 0 || laneIndex >= boardWidth)
     {
         return NULL;
     }
