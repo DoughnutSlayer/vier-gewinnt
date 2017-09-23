@@ -1,0 +1,35 @@
+1. Struct Knoten bauen
+  Ein Knoten ist definiert als
+  Vorgängerknoten
+  Nachfolgerknoten
+  Gameboard
+    Gameboard Hash
+  Winperc
+
+2. Algorithmus zum Baumbau bauen
+  Master besteht aus 2 queues
+    1.queue ist die derzeitige Generation
+    2.queue ist die nächste Generation
+      2.queue kann Mergefunktion um zur ersten queue zu werden (free hashes)
+  Master verteilt immer X knoten an jeden unterprozess wobei X ein Limit darstellt
+  Ist die Anzahl der Knoten kleiner X*Prozesse so werden je X/Prozesse Prozesse verteilt
+
+  Unterprozesse Prüfen ob Knoten-Gameboard wonby und erzeugen nachknoten und schicken das an master / queue 2
+  Baum in einem Array mit relativen Adressen
+  Beim nächsten mal bei Yu-Gi-Oh... Winchances parallel, KI, Konsolenspielbar
+  Danach... GUI und Statistiken
+
+  3. Algorithmus zum Winchance berechnen bauen
+  Rekursiv
+  Es werden Teilbäume berechnet anhand der ANzahl der Prozesse
+  Jeder Prozess bekommt so einen Teilbaum schaut sich ersten Knoten an und sagt
+
+  WEnn Alle nachknoten finished sind dann berechne winperc
+  wenn nicht dann gehe zu einem der nicht finishten knoten
+
+  4. KI und Gui bauen zum spielen
+    Beim setup wird spielfeld größe und erster stein angegeben
+    dann berechnet ki
+
+  5. Fancy stuff den keiner Braucht
+  Baum Gui SUpermodell
