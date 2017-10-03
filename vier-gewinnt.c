@@ -77,8 +77,12 @@ int getNumberInput()
     int validInput = 0;
     int input;
     validInput = scanf("%d", &input);
-    while (validInput <= 0)
+    while (input < 0 || input < (boardWidth - 1) || !validInput)
     {
+        if (!validInput)
+        {
+            scanf("%*s");
+        }
         printf("%s", invalidInputMessage);
         fflush(NULL);
         validInput = scanf("%d", &input);
