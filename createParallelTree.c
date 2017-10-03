@@ -159,6 +159,29 @@ void defineMPIDatatypes(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
     MPI_Type_commit(boardArrayType);
 }
 
+void prepareBoardSend(struct gameboard *boardSendBuffer, int *sendCnts, int *displacements)
+{
+    for (int i = 0; i < currentKnotsCount; i++)
+    {
+        boardSendBuffer[i] = *(currentKnots[i]->gameboard);
+    }
+
+    int knotsPerProcess = currentKnotsCount / worldSize;
+    int displacement = 0;
+    //TODO Limit zum senden
+    for(int i = 0; i < worldSize; i++)
+    {
+        int sendCount = knotsPerProcess;
+        if (i < currentKnotsCount % worldSize)
+        {
+            sendCount += 1;
+        }
+        sendCnts[i] = sendCount;
+        displacements[i] = displacement;
+        displacement += sendCount;
+    }
+}
+
 void buildParallelTree(struct knot *startKnot)
 {
     int firstPlayer;
@@ -196,29 +219,11 @@ void buildParallelTree(struct knot *startKnot)
     while (!treeFinished)
     {
         boardSendBuffer = malloc(sizeof(*boardSendBuffer) * (currentKnotsCount));
-
         if (rank == 0)
         {
-            for (int i = 0; i < currentKnotsCount; i++)
-            {
-                boardSendBuffer[i] = *(currentKnots[i]->gameboard);
-            }
-
-            int knotsPerProcess = currentKnotsCount / worldSize;
-            int displacement = 0;
-            //TODO Limit zum senden
-            for(int i = 0; i < worldSize; i++)
-            {
-                int sendCount = knotsPerProcess;
-                if (i < currentKnotsCount % worldSize)
-                {
-                    sendCount += 1;
-                }
-                sendCnts[i] = sendCount;
-                displacements[i] = displacement;
-                displacement += sendCount;
-            }
+            prepareBoardSend(boardSendBuffer, sendCnts, displacements);
         }
+
         MPI_Scatter(sendCnts, 1, MPI_INT, &recvCnt, 1, MPI_INT, 0, MPI_COMM_WORLD);
         boardRecvBuffer = (struct gameboard *) malloc(sizeof(*boardRecvBuffer) * recvCnt);
         MPI_Scatterv(boardSendBuffer, sendCnts, displacements, MPI_GAMEBOARD, boardRecvBuffer, recvCnt, MPI_GAMEBOARD, 0, MPI_COMM_WORLD);
