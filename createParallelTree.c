@@ -364,12 +364,12 @@ void buildParallelTree(struct knot *startKnot)
     double *winpercentageRecvBuffer;
     turnCounter--;
     MPI_Bcast(&turnCounter, 1, MPI_INT, 0, MPI_COMM_WORLD);
-    for (int i = turnCounter; i >= 0; i--)
+    for (int turnIndex = turnCounter; turnIndex >= 0; turnIndex--)
     {
-        winpercentageArraySendBuffer = malloc(sizeof(*winpercentageArraySendBuffer) * turnSizes[i]);
+        winpercentageArraySendBuffer = malloc(sizeof(*winpercentageArraySendBuffer) * turnSizes[turnIndex]);
         if (rank == 0)
         {
-            prepareWinpercentageArraySend(i, winpercentageArraySendBuffer, sendCnts, displacements);
+            prepareWinpercentageArraySend(turnIndex, winpercentageArraySendBuffer, sendCnts, displacements);
         }
 
         MPI_Scatter(sendCnts, 1, MPI_INT, &recvCnt, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -388,7 +388,7 @@ void buildParallelTree(struct knot *startKnot)
                 {
                     break;
                 }
-                if (i % 2 == firstPlayer % 2)
+                if (turnIndex % 2 == firstPlayer % 2)
                 {
                     result = fmax(result, winpercentageArrayRecvBuffer[j][k]);
                 }
@@ -398,7 +398,7 @@ void buildParallelTree(struct knot *startKnot)
                     resultCount++;
                 }
             }
-            if (!(i % 2 == firstPlayer % 2))
+            if (!(turnIndex % 2 == firstPlayer % 2))
             {
                 result = result / resultCount;
             }
@@ -406,15 +406,15 @@ void buildParallelTree(struct knot *startKnot)
         }
         free(winpercentageArrayRecvBuffer);
 
-        winpercentageRecvBuffer = malloc(sizeof(*winpercentageRecvBuffer) * turnSizes[i]);
+        winpercentageRecvBuffer = malloc(sizeof(*winpercentageRecvBuffer) * turnSizes[turnIndex]);
         MPI_Gatherv(winpercentageSendBuffer, recvCnt, MPI_DOUBLE, winpercentageRecvBuffer, sendCnts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
         free(winpercentageSendBuffer);
 
         if (rank == 0)
         {
-            for (int j = 0; j < turnSizes[i]; j++)
+            for (int j = 0; j < turnSizes[turnIndex]; j++)
             {
-                turns[i][j]->winPercentage = winpercentageRecvBuffer[j];
+                turns[turnIndex][j]->winPercentage = winpercentageRecvBuffer[j];
             }
         }
         free(winpercentageRecvBuffer);
