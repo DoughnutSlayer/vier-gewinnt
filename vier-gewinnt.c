@@ -113,7 +113,7 @@ int main(int argc, char *argv[])
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     if (rank == 0)
     {
-        sprintf(&invalidInputMessage, "Please enter a number between 0 and %d: ", boardWidth - 1);
+        sprintf(invalidInputMessage, "Please enter a number between 0 and %d: ", boardWidth - 1);
 
         struct gameboard emptyBoard = {0};
         emptyBoard.nextPlayer = 1;
