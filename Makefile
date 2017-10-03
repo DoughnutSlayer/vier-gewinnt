@@ -13,7 +13,7 @@ DEPS = createParallelTree.h createSequentialTree.h gameboard.h knot.h calculateS
 OBJS = createParallelTree.o createSequentialTree.o gameboard.o knot.o calculateSequentialWinPercentage.o vier-gewinnt.o
 
 vier-gewinnt : $(OBJS)
-	$(CC) $(CFLAGS) -o vier-gewinnt $(OBJS)
+	$(CC) $(CFLAGS) -lm -o vier-gewinnt $(OBJS)
 
 calculateSequentialWinPercentage.o : calculateSequentialWinPercentage.c $(DEPS)
 	$(CC) $(CFLAGS) -c calculateSequentialWinPercentage.c
