@@ -182,6 +182,21 @@ void prepareBoardSend(struct gameboard *boardSendBuffer, int *sendCnts, int *dis
     }
 }
 
+void calculateBoardSuccessors(int boardCount, struct gameboard *boards, struct gameboard (*boardSuccessorArrays)[BOARD_WIDTH + 1])
+{
+    for (int i = 0; i < boardCount; i++)
+    {
+        struct gameboard *currentBoard = &boards[i];
+        boardSuccessorArrays[i][0] = *currentBoard;
+        for (int j = 0; j < boardWidth; j++)
+        {
+            struct gameboard *createdBoard = put(currentBoard, j);
+            boardSuccessorArrays[i][j + 1] = (createdBoard) ? *createdBoard : zeroBoard;
+            free(createdBoard);
+        }
+    }
+}
+
 void buildParallelTree(struct knot *startKnot)
 {
     int firstPlayer;
@@ -230,17 +245,7 @@ void buildParallelTree(struct knot *startKnot)
         free(boardSendBuffer);
 
         boardArraySendBuffer = malloc(sizeof(boardArraySendBuffer[0]) * recvCnt);
-        for (int i = 0; i < recvCnt; i++)
-        {
-            struct gameboard *currentBoard = &boardRecvBuffer[i];
-            boardArraySendBuffer[i][0] = *currentBoard;
-            for (int j = 0; j < BOARD_WIDTH; j++)
-            {
-                struct gameboard *createdBoard = put(currentBoard, j);
-                boardArraySendBuffer[i][j + 1] = (createdBoard) ? *createdBoard : zeroBoard;
-                free(createdBoard);
-            }
-        }
+        calculateBoardSuccessors(recvCnt, boardRecvBuffer, boardArraySendBuffer);
         free(boardRecvBuffer);
 
         if (rank == 0)
