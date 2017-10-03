@@ -25,7 +25,7 @@ int currentKnotsCount;
 
 int nextKnotsCount;
 
-int pCheckForDuplicate(struct knot *knot)
+int getCurrentTurnDuplicateIndex(struct knot *knot)
 {
     for (int i = 0; i < nextKnotsCount; i++)
     {
@@ -37,7 +37,7 @@ int pCheckForDuplicate(struct knot *knot)
     return -1;
 }
 
-void pSetSuccessorsOf(struct knot *knot)
+void initializeSuccessors(struct knot *knot)
 {
     //The number of successors that "knot" currently has
     knot->successorsCount = 0;
@@ -49,7 +49,7 @@ void pSetSuccessorsOf(struct knot *knot)
         if (successor->gameboard != NULL)
         {
             calculateHash(successor);
-            int duplicateSuccessorIndex = pCheckForDuplicate(successor);
+            int duplicateSuccessorIndex = getCurrentTurnDuplicateIndex(successor);
             if(duplicateSuccessorIndex == -1)
             {
                 successor->winPercentage = -1;
@@ -78,12 +78,12 @@ void pSetSuccessorsOf(struct knot *knot)
     }
 }
 
-void pSetNextKnots()
+void initializeNextKnots()
 {
     nextKnots = malloc(sizeof(currentKnots) * currentKnotsCount * (boardWidth) * 4); //TODO: remove 4
     for (int currentKnot = 0; currentKnot < currentKnotsCount; currentKnot++)
     {
-        pSetSuccessorsOf(currentKnots[currentKnot]);
+        initializeSuccessors(currentKnots[currentKnot]);
     }
 
     if (nextKnotsCount == 0)
@@ -138,7 +138,7 @@ void pInitializeQueues(struct knot *root)
     currentKnots = malloc(sizeof(root));
     currentKnots[0] = root;
     currentKnotsCount = 1;
-    pSetNextKnots(currentKnots);
+    initializeNextKnots(currentKnots);
 }
 
 void buildParallelTree(struct knot *startKnot)
@@ -261,7 +261,7 @@ void buildParallelTree(struct knot *startKnot)
                     successor->gameboard = malloc(sizeof(*(successor->gameboard)));
                     *(successor->gameboard) = resultRecvBuffer[i][j];
                     calculateHash(successor);
-                    int duplicateIndex = pCheckForDuplicate(successor);
+                    int duplicateIndex = getCurrentTurnDuplicateIndex(successor);
                     if (duplicateIndex >= 0)
                     {
                         free(successor);
