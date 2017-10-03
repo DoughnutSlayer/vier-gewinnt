@@ -185,6 +185,31 @@ void prepareBoardSend(struct gameboard *boardSendBuffer, int *sendCnts, int *dis
     }
 }
 
+void prepareWinpercentageArraySend(int turnIndex, double (*winpercentageArraySendBuffer)[BOARD_WIDTH], int *sendCnts, int *displacements)
+{
+    for (int j = 0; j < turnSizes[turnIndex]; j++)
+    {
+        int successorsCount = turns[turnIndex][j]->successorsCount;
+        for (int k = 0; k < successorsCount; k++)
+        {
+            winpercentageArraySendBuffer[j][k] = turns[turnIndex][j]->successors[k]->winPercentage;
+        }
+        if (successorsCount < boardWidth)
+        {
+            winpercentageArraySendBuffer[j][successorsCount] = (double) -1;
+        }
+    }
+
+    int knotsPerProcess = turnSizes[turnIndex] / worldSize;
+    int displacement = 0;
+    for (int j = 0; j < worldSize; j++)
+    {
+        sendCnts[j] = (j < (turnSizes[turnIndex] % worldSize)) ? knotsPerProcess + 1 : knotsPerProcess;
+        displacements[j] = displacement;
+        displacement += sendCnts[j];
+    }
+}
+
 void calculateBoardSuccessors(int boardCount, struct gameboard *boards, struct gameboard (*boardSuccessorArrays)[BOARD_WIDTH + 1])
 {
     for (int i = 0; i < boardCount; i++)
@@ -344,27 +369,7 @@ void buildParallelTree(struct knot *startKnot)
         winpercentageArraySendBuffer = malloc(sizeof(*winpercentageArraySendBuffer) * turnSizes[i]);
         if (rank == 0)
         {
-            for (int j = 0; j < turnSizes[i]; j++)
-            {
-                int successorsCount = turns[i][j]->successorsCount;
-                for (int k = 0; k < successorsCount; k++)
-                {
-                    winpercentageArraySendBuffer[j][k] = turns[i][j]->successors[k]->winPercentage;
-                }
-                if (successorsCount < boardWidth)
-                {
-                    winpercentageArraySendBuffer[j][successorsCount] = (double) -1;
-                }
-            }
-
-            int knotsPerProcess = turnSizes[i] / worldSize;
-            int displacement = 0;
-            for (int j = 0; j < worldSize; j++)
-            {
-                sendCnts[j] = (j < (turnSizes[i] % worldSize)) ? knotsPerProcess + 1 : knotsPerProcess;
-                displacements[j] = displacement;
-                displacement += sendCnts[j];
-            }
+            prepareWinpercentageArraySend(i, winpercentageArraySendBuffer, sendCnts, displacements);
         }
 
         MPI_Scatter(sendCnts, 1, MPI_INT, &recvCnt, 1, MPI_INT, 0, MPI_COMM_WORLD);
