@@ -50,7 +50,7 @@ void initializeSuccessors(struct knot *knot)
             free(successor);
             continue;
         }
-        
+
         calculateHash(successor);
         int duplicateSuccessorIndex = getCurrentTurnDuplicateIndex(successor);
         if(duplicateSuccessorIndex == -1)
@@ -78,7 +78,7 @@ void initializeSuccessors(struct knot *knot)
 
 void initializeNextKnots()
 {
-    nextKnots = malloc(sizeof(currentKnots) * currentKnotsCount * (boardWidth) * 4); //TODO: remove 4
+    nextKnots = malloc(sizeof(currentKnots) * currentKnotsCount * boardWidth);
     for (int currentKnot = 0; currentKnot < currentKnotsCount; currentKnot++)
     {
         initializeSuccessors(currentKnots[currentKnot]);
