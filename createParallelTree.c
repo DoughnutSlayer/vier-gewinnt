@@ -233,16 +233,20 @@ void buildParallelTree(struct knot *startKnot)
     struct gameboard (*boardArrayRecvBuffer)[BOARD_WIDTH + 1];
     while (!treeFinished)
     {
-        boardSendBuffer = malloc(sizeof(*boardSendBuffer) * (currentKnotsCount));
         if (rank == 0)
         {
+            boardSendBuffer = malloc(sizeof(*boardSendBuffer) * (currentKnotsCount));
             prepareBoardSend(boardSendBuffer, sendCnts, displacements);
         }
 
         MPI_Scatter(sendCnts, 1, MPI_INT, &recvCnt, 1, MPI_INT, 0, MPI_COMM_WORLD);
         boardRecvBuffer = (struct gameboard *) malloc(sizeof(*boardRecvBuffer) * recvCnt);
         MPI_Scatterv(boardSendBuffer, sendCnts, displacements, MPI_GAMEBOARD, boardRecvBuffer, recvCnt, MPI_GAMEBOARD, 0, MPI_COMM_WORLD);
-        free(boardSendBuffer);
+        if (rank == 0)
+        {
+            free(boardSendBuffer);
+        }
+
 
         boardArraySendBuffer = malloc(sizeof(boardArraySendBuffer[0]) * recvCnt);
         calculateBoardSuccessors(recvCnt, boardRecvBuffer, boardArraySendBuffer);
