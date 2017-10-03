@@ -197,6 +197,60 @@ void calculateBoardSuccessors(int boardCount, struct gameboard *boards, struct g
     }
 }
 
+void fillNextKnots(struct gameboard (*successorArrays)[BOARD_WIDTH + 1])
+{
+    for (int i = 0; i < currentKnotsCount; i++)
+    {
+        struct knot *predecessor = getCurrentKnot(&(successorArrays[i][0]));
+        predecessor->successors = malloc(sizeof(predecessor->successors) * boardWidth);
+        predecessor->successorsCount = 0;
+        if (!predecessor)
+        {
+            break;
+        }
+        for (int j = 1; j < (boardWidth + 1); j++)
+        {
+            if (successorArrays[i][j].nextPlayer == 0)
+            {
+                continue;
+            }
+            struct knot *successor = malloc(sizeof(*successor));
+            successor->gameboard = malloc(sizeof(*(successor->gameboard)));
+            *(successor->gameboard) = successorArrays[i][j];
+            calculateHash(successor);
+            int duplicateIndex = getCurrentTurnDuplicateIndex(successor);
+            if (duplicateIndex >= 0)
+            {
+                free(successor);
+                successor = nextKnots[duplicateIndex];
+            }
+            else if (!successor->gameboard->isWonBy)
+            {
+                nextKnots[nextKnotsCount] = successor;
+                nextKnotsCount += 1;
+            }
+            else
+            {
+                if (successor->gameboard->isWonBy == 2)
+                {
+                    successor->winPercentage = 100;
+                }
+                else
+                {
+                    successor->winPercentage = 0;
+                }
+            }
+            predecessor->successors[predecessor->successorsCount] = successor;
+            predecessor->successorsCount += 1;
+        }
+        if (predecessor->successorsCount == 0)
+        {
+            free(predecessor->successors);
+            predecessor->successors = NULL;
+        }
+    }
+}
+
 void buildParallelTree(struct knot *startKnot)
 {
     int firstPlayer;
@@ -261,56 +315,7 @@ void buildParallelTree(struct knot *startKnot)
 
         if (rank == 0)
         {
-            for (int i = 0; i < currentKnotsCount; i++)
-            {
-                struct knot *predecessor = getCurrentKnot(&(boardArrayRecvBuffer[i][0]));
-                predecessor->successors = malloc(sizeof(predecessor->successors) * boardWidth);
-                predecessor->successorsCount = 0;
-                if (!predecessor)
-                {
-                    break;
-                }
-                for (int j = 1; j < (boardWidth + 1); j++)
-                {
-                    if (boardArrayRecvBuffer[i][j].nextPlayer == 0)
-                    {
-                        continue;
-                    }
-                    struct knot *successor = malloc(sizeof(*successor));
-                    successor->gameboard = malloc(sizeof(*(successor->gameboard)));
-                    *(successor->gameboard) = boardArrayRecvBuffer[i][j];
-                    calculateHash(successor);
-                    int duplicateIndex = getCurrentTurnDuplicateIndex(successor);
-                    if (duplicateIndex >= 0)
-                    {
-                        free(successor);
-                        successor = nextKnots[duplicateIndex];
-                    }
-                    else if (!successor->gameboard->isWonBy)
-                    {
-                        nextKnots[nextKnotsCount] = successor;
-                        nextKnotsCount += 1;
-                    }
-                    else
-                    {
-                        if (successor->gameboard->isWonBy == 2)
-                        {
-                            successor->winPercentage = 100;
-                        }
-                        else
-                        {
-                            successor->winPercentage = 0;
-                        }
-                    }
-                    predecessor->successors[predecessor->successorsCount] = successor;
-                    predecessor->successorsCount += 1;
-                }
-                if (predecessor->successorsCount == 0)
-                {
-                    free(predecessor->successors);
-                    predecessor->successors = NULL;
-                }
-            }
+            fillNextKnots(boardArrayRecvBuffer);
             free(boardArrayRecvBuffer);
             if (nextKnotsCount == 0)
             {
