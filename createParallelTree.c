@@ -142,7 +142,7 @@ void pInitializeQueues(struct knot *root)
     initializeNextKnots(currentKnots);
 }
 
-void defineMPIDatatypes(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
+void defineMPIDatatypes(MPI_Datatype *boardType, MPI_Datatype *boardArrayType, MPI_Datatype *winChanceArrayType)
 {
     int boardBlocklengths[3] = {sizeof(((struct gameboard*)0)->lanes) / sizeof(int),
     sizeof(((struct gameboard*)0)->isWonBy) / sizeof(int),
@@ -157,6 +157,9 @@ void defineMPIDatatypes(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
 
     MPI_Type_contiguous(boardWidth + 1, *boardType, boardArrayType);
     MPI_Type_commit(boardArrayType);
+
+    MPI_Type_contiguous(boardWidth, MPI_DOUBLE, winChanceArrayType);
+    MPI_Type_commit(winChanceArrayType);
 }
 
 void prepareBoardSend(struct gameboard *boardSendBuffer, int *sendCnts, int *displacements)
@@ -269,8 +272,8 @@ void buildParallelTree(struct knot *startKnot)
     }
     MPI_Bcast(&firstPlayer, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-    MPI_Datatype MPI_GAMEBOARD, MPI_GAMEBOARD_ARRAY;
-    defineMPIDatatypes(&MPI_GAMEBOARD, &MPI_GAMEBOARD_ARRAY);
+    MPI_Datatype MPI_GAMEBOARD, MPI_GAMEBOARD_ARRAY, MPI_WINCHANCE_ARRAY;
+    defineMPIDatatypes(&MPI_GAMEBOARD, &MPI_GAMEBOARD_ARRAY, &MPI_WINCHANCE_ARRAY);
 
     if (rank == 0)
     {
@@ -301,7 +304,6 @@ void buildParallelTree(struct knot *startKnot)
             free(boardSendBuffer);
         }
 
-
         boardArraySendBuffer = malloc(sizeof(boardArraySendBuffer[0]) * recvCnt);
         calculateBoardSuccessors(recvCnt, boardRecvBuffer, boardArraySendBuffer);
         free(boardRecvBuffer);
@@ -330,10 +332,6 @@ void buildParallelTree(struct knot *startKnot)
         }
         MPI_Bcast(&treeFinished, 1, MPI_INT, 0, MPI_COMM_WORLD);
     }
-
-    MPI_Datatype MPI_WINCHANCE_ARRAY;
-    MPI_Type_contiguous(boardWidth, MPI_DOUBLE, &MPI_WINCHANCE_ARRAY);
-    MPI_Type_commit(&MPI_WINCHANCE_ARRAY);
 
     double (*winpercentageArraySendBuffer)[BOARD_WIDTH];
     double (*winpercentageArrayRecvBuffer)[BOARD_WIDTH];
