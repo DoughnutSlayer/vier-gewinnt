@@ -9,6 +9,9 @@
 
 extern const int boardWidth;
 
+int rank;
+int worldSize;
+
 struct knot **(turns[BOARD_WIDTH * BOARD_HEIGHT]);
 
 int turnSizes[BOARD_WIDTH * BOARD_HEIGHT];
@@ -158,7 +161,7 @@ void defineMPIDatatypes(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
 
 void buildParallelTree(struct knot *startKnot)
 {
-    int worldSize, rank, firstPlayer;
+    int firstPlayer;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &worldSize);
     if (worldSize == 1)
