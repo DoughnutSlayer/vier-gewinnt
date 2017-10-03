@@ -11,6 +11,7 @@ extern const int boardWidth;
 
 int rank;
 int worldSize;
+int firstPlayer;
 
 struct knot **(turns[BOARD_WIDTH * BOARD_HEIGHT]);
 
@@ -281,7 +282,6 @@ void fillNextKnots(struct gameboard (*successorArrays)[BOARD_WIDTH + 1])
 
 void buildParallelTree(struct knot *startKnot)
 {
-    int firstPlayer;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &worldSize);
     if (worldSize == 1)
