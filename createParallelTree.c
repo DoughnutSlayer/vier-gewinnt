@@ -39,36 +39,34 @@ int getCurrentTurnDuplicateIndex(struct knot *knot)
 
 void initializeSuccessors(struct knot *knot)
 {
-    //The number of successors that "knot" currently has
     knot->successorsCount = 0;
     knot->successors = malloc(sizeof(knot->successors) * boardWidth);
     for (int lane = 0; lane < boardWidth; lane++)
     {
         struct knot *successor = malloc(sizeof(*successor));
         successor->gameboard = put(knot->gameboard, lane);
-        if (successor->gameboard != NULL)
+        if (successor->gameboard == NULL)
         {
-            calculateHash(successor);
-            int duplicateSuccessorIndex = getCurrentTurnDuplicateIndex(successor);
-            if(duplicateSuccessorIndex == -1)
-            {
-                successor->winPercentage = -1;
-                knot->successors[knot->successorsCount] = successor;
-                nextKnots[nextKnotsCount] = successor;
-                nextKnotsCount++;
-            }
-            else
-            {
-                free(successor);
-                successor = nextKnots[duplicateSuccessorIndex];
-                knot->successors[knot->successorsCount] = successor;
-            }
-            knot->successorsCount++;
+            free(successor);
+            continue;
+        }
+        
+        calculateHash(successor);
+        int duplicateSuccessorIndex = getCurrentTurnDuplicateIndex(successor);
+        if(duplicateSuccessorIndex == -1)
+        {
+            successor->winPercentage = -1;
+            knot->successors[knot->successorsCount] = successor;
+            nextKnots[nextKnotsCount] = successor;
+            nextKnotsCount++;
         }
         else
         {
             free(successor);
+            successor = nextKnots[duplicateSuccessorIndex];
+            knot->successors[knot->successorsCount] = successor;
         }
+        knot->successorsCount++;
     }
 
     if (knot->successorsCount == 0)
