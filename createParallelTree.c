@@ -226,6 +226,36 @@ void calculateBoardSuccessors(int boardCount, struct gameboard *boards, struct g
     }
 }
 
+void calculatePredecessorWinpercentages(int turnIndex, int winpercentageArrayCount, double (*winpercentageArrays)[BOARD_WIDTH], double *predecessorWinpercentages)
+{
+    for (int j = 0; j < winpercentageArrayCount; j++)
+    {
+        double result = 0;
+        int resultCount = 0;
+        for (int k = 0; k < boardWidth; k++)
+        {
+            if (winpercentageArrays[j][k] < 0)
+            {
+                break;
+            }
+            if (turnIndex % 2 == firstPlayer % 2)
+            {
+                result = fmax(result, winpercentageArrays[j][k]);
+            }
+            else
+            {
+                result += winpercentageArrays[j][k];
+                resultCount++;
+            }
+        }
+        if (!(turnIndex % 2 == firstPlayer % 2))
+        {
+            result = result / resultCount;
+        }
+        predecessorWinpercentages[j] = result;
+    }
+}
+
 void fillNextKnots(struct gameboard (*successorArrays)[BOARD_WIDTH + 1])
 {
     for (int i = 0; i < currentKnotsCount; i++)
@@ -378,32 +408,7 @@ void buildParallelTree(struct knot *startKnot)
         free(winpercentageArraySendBuffer);
 
         winpercentageSendBuffer = malloc(sizeof(*winpercentageSendBuffer) * recvCnt);
-        for (int j = 0; j < recvCnt; j++)
-        {
-            double result = 0;
-            int resultCount = 0;
-            for (int k = 0; k < boardWidth; k++)
-            {
-                if (winpercentageArrayRecvBuffer[j][k] < 0)
-                {
-                    break;
-                }
-                if (turnIndex % 2 == firstPlayer % 2)
-                {
-                    result = fmax(result, winpercentageArrayRecvBuffer[j][k]);
-                }
-                else
-                {
-                    result += winpercentageArrayRecvBuffer[j][k];
-                    resultCount++;
-                }
-            }
-            if (!(turnIndex % 2 == firstPlayer % 2))
-            {
-                result = result / resultCount;
-            }
-            winpercentageSendBuffer[j] = result;
-        }
+        calculatePredecessorWinpercentages(turnIndex, recvCnt, winpercentageArrayRecvBuffer, winpercentageSendBuffer);
         free(winpercentageArrayRecvBuffer);
 
         winpercentageRecvBuffer = malloc(sizeof(*winpercentageRecvBuffer) * turnSizes[turnIndex]);
