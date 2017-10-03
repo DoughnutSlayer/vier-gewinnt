@@ -323,10 +323,10 @@ void buildParallelTree(struct knot *startKnot)
                 nextKnots = NULL;
             }
             refreshQueues();
-        }
-        if (rank == 0 && !currentKnots)
-        {
-            treeFinished = 1;
+            if (!currentKnots)
+            {
+                treeFinished = 1;
+            }
         }
         MPI_Bcast(&treeFinished, 1, MPI_INT, 0, MPI_COMM_WORLD);
     }
