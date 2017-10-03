@@ -183,21 +183,22 @@ void buildParallelTree(struct knot *startKnot)
     }
 
     int treeFinished = 0;
+    struct gameboard *boardSendBuffer = malloc(sizeof(*boardSendBuffer) * (currentKnotsCount));
+    int *sendCnts = malloc(sizeof(*sendCnts) * worldSize);
+    int *displacements = malloc(sizeof(*sendCnts) * worldSize);
+    struct gameboard *boardRecvBuffer;
+    int recvCnt;
+    struct gameboard (*boardArraySendBuffer)[BOARD_WIDTH + 1];
+    struct gameboard (*boardArrayRecvBuffer)[BOARD_WIDTH + 1];
     while (!treeFinished)
     {
-        struct gameboard *taskSendBuffer = malloc(sizeof(*taskSendBuffer) * (currentKnotsCount));
-        int *sendCnts = malloc(sizeof(*sendCnts) * worldSize);
-        int *displacements = malloc(sizeof(*sendCnts) * worldSize);
-        struct gameboard *taskRecvBuffer;
-        int recvCnt;
-        struct gameboard (*resultSendBuffer)[BOARD_WIDTH + 1];
-        struct gameboard (*resultRecvBuffer)[BOARD_WIDTH + 1];
+        boardSendBuffer = malloc(sizeof(*boardSendBuffer) * (currentKnotsCount));
 
         if (rank == 0)
         {
             for (int i = 0; i < currentKnotsCount; i++)
             {
-                taskSendBuffer[i] = *(currentKnots[i]->gameboard);
+                boardSendBuffer[i] = *(currentKnots[i]->gameboard);
             }
 
             int knotsPerProcess = currentKnotsCount / worldSize;
@@ -216,38 +217,36 @@ void buildParallelTree(struct knot *startKnot)
             }
         }
         MPI_Scatter(sendCnts, 1, MPI_INT, &recvCnt, 1, MPI_INT, 0, MPI_COMM_WORLD);
-        taskRecvBuffer = (struct gameboard *) malloc(sizeof(*taskRecvBuffer) * recvCnt);
-        MPI_Scatterv(taskSendBuffer, sendCnts, displacements, MPI_GAMEBOARD, taskRecvBuffer, recvCnt, MPI_GAMEBOARD, 0, MPI_COMM_WORLD);
-        free(taskSendBuffer);
+        boardRecvBuffer = (struct gameboard *) malloc(sizeof(*boardRecvBuffer) * recvCnt);
+        MPI_Scatterv(boardSendBuffer, sendCnts, displacements, MPI_GAMEBOARD, boardRecvBuffer, recvCnt, MPI_GAMEBOARD, 0, MPI_COMM_WORLD);
+        free(boardSendBuffer);
 
-        resultSendBuffer = malloc(sizeof(resultSendBuffer[0]) * recvCnt);
+        boardArraySendBuffer = malloc(sizeof(boardArraySendBuffer[0]) * recvCnt);
         for (int i = 0; i < recvCnt; i++)
         {
-            struct gameboard *currentBoard = &taskRecvBuffer[i];
-            resultSendBuffer[i][0] = *currentBoard;
+            struct gameboard *currentBoard = &boardRecvBuffer[i];
+            boardArraySendBuffer[i][0] = *currentBoard;
             for (int j = 0; j < BOARD_WIDTH; j++)
             {
                 struct gameboard *createdBoard = put(currentBoard, j);
-                resultSendBuffer[i][j + 1] = (createdBoard) ? *createdBoard : zeroBoard;
+                boardArraySendBuffer[i][j + 1] = (createdBoard) ? *createdBoard : zeroBoard;
                 free(createdBoard);
             }
         }
-        free(taskRecvBuffer);
+        free(boardRecvBuffer);
 
         if (rank == 0)
         {
-            resultRecvBuffer = malloc(sizeof(resultRecvBuffer[0]) * currentKnotsCount);
+            boardArrayRecvBuffer = malloc(sizeof(boardArrayRecvBuffer[0]) * currentKnotsCount);
         }
-        MPI_Gatherv(resultSendBuffer, recvCnt, MPI_GAMEBOARD_ARRAY, resultRecvBuffer, sendCnts, displacements, MPI_GAMEBOARD_ARRAY, 0, MPI_COMM_WORLD);
-        free(sendCnts);
-        free(displacements);
-        free(resultSendBuffer);
+        MPI_Gatherv(boardArraySendBuffer, recvCnt, MPI_GAMEBOARD_ARRAY, boardArrayRecvBuffer, sendCnts, displacements, MPI_GAMEBOARD_ARRAY, 0, MPI_COMM_WORLD);
+        free(boardArraySendBuffer);
 
         if (rank == 0)
         {
             for (int i = 0; i < currentKnotsCount; i++)
             {
-                struct knot *predecessor = getCurrentKnot(&(resultRecvBuffer[i][0]));
+                struct knot *predecessor = getCurrentKnot(&(boardArrayRecvBuffer[i][0]));
                 predecessor->successors = malloc(sizeof(predecessor->successors) * boardWidth);
                 predecessor->successorsCount = 0;
                 if (!predecessor)
@@ -256,13 +255,13 @@ void buildParallelTree(struct knot *startKnot)
                 }
                 for (int j = 1; j < (boardWidth + 1); j++)
                 {
-                    if (resultRecvBuffer[i][j].nextPlayer == 0)
+                    if (boardArrayRecvBuffer[i][j].nextPlayer == 0)
                     {
                         continue;
                     }
                     struct knot *successor = malloc(sizeof(*successor));
                     successor->gameboard = malloc(sizeof(*(successor->gameboard)));
-                    *(successor->gameboard) = resultRecvBuffer[i][j];
+                    *(successor->gameboard) = boardArrayRecvBuffer[i][j];
                     calculateHash(successor);
                     int duplicateIndex = getCurrentTurnDuplicateIndex(successor);
                     if (duplicateIndex >= 0)
@@ -295,7 +294,7 @@ void buildParallelTree(struct knot *startKnot)
                     predecessor->successors = NULL;
                 }
             }
-            free(resultRecvBuffer);
+            free(boardArrayRecvBuffer);
             if (nextKnotsCount == 0)
             {
                 free(nextKnots);
@@ -314,18 +313,15 @@ void buildParallelTree(struct knot *startKnot)
     MPI_Type_contiguous(boardWidth, MPI_DOUBLE, &MPI_WINCHANCE_ARRAY);
     MPI_Type_commit(&MPI_WINCHANCE_ARRAY);
 
-    double (*taskSendBuffer)[BOARD_WIDTH];
-    int *sendCnts = malloc(sizeof(*sendCnts) * worldSize);
-    int *displacements = malloc(sizeof(*displacements) * worldSize);
-    int recvCnt;
-    double (*taskRecvBuffer)[BOARD_WIDTH];
-    double *resultSendBuffer;
-    double *resultRecvBuffer;
+    double (*winpercentageArraySendBuffer)[BOARD_WIDTH];
+    double (*winpercentageArrayRecvBuffer)[BOARD_WIDTH];
+    double *winpercentageSendBuffer;
+    double *winpercentageRecvBuffer;
     turnCounter--;
     MPI_Bcast(&turnCounter, 1, MPI_INT, 0, MPI_COMM_WORLD);
     for (int i = turnCounter; i >= 0; i--)
     {
-        taskSendBuffer = malloc(sizeof(*taskSendBuffer) * turnSizes[i]);
+        winpercentageArraySendBuffer = malloc(sizeof(*winpercentageArraySendBuffer) * turnSizes[i]);
         if (rank == 0)
         {
             for (int j = 0; j < turnSizes[i]; j++)
@@ -333,11 +329,11 @@ void buildParallelTree(struct knot *startKnot)
                 int successorsCount = turns[i][j]->successorsCount;
                 for (int k = 0; k < successorsCount; k++)
                 {
-                    taskSendBuffer[j][k] = turns[i][j]->successors[k]->winPercentage;
+                    winpercentageArraySendBuffer[j][k] = turns[i][j]->successors[k]->winPercentage;
                 }
                 if (successorsCount < boardWidth)
                 {
-                    taskSendBuffer[j][successorsCount] = (double) -1;
+                    winpercentageArraySendBuffer[j][successorsCount] = (double) -1;
                 }
             }
 
@@ -352,28 +348,28 @@ void buildParallelTree(struct knot *startKnot)
         }
 
         MPI_Scatter(sendCnts, 1, MPI_INT, &recvCnt, 1, MPI_INT, 0, MPI_COMM_WORLD);
-        taskRecvBuffer = malloc(sizeof(*taskRecvBuffer) * recvCnt);
-        MPI_Scatterv(taskSendBuffer, sendCnts, displacements, MPI_WINCHANCE_ARRAY, taskRecvBuffer, recvCnt, MPI_WINCHANCE_ARRAY, 0, MPI_COMM_WORLD);
-        free(taskSendBuffer);
+        winpercentageArrayRecvBuffer = malloc(sizeof(*winpercentageArrayRecvBuffer) * recvCnt);
+        MPI_Scatterv(winpercentageArraySendBuffer, sendCnts, displacements, MPI_WINCHANCE_ARRAY, winpercentageArrayRecvBuffer, recvCnt, MPI_WINCHANCE_ARRAY, 0, MPI_COMM_WORLD);
+        free(winpercentageArraySendBuffer);
 
-        resultSendBuffer = malloc(sizeof(*resultSendBuffer) * recvCnt);
+        winpercentageSendBuffer = malloc(sizeof(*winpercentageSendBuffer) * recvCnt);
         for (int j = 0; j < recvCnt; j++)
         {
             double result = 0;
             int resultCount = 0;
             for (int k = 0; k < boardWidth; k++)
             {
-                if (taskRecvBuffer[j][k] < 0)
+                if (winpercentageArrayRecvBuffer[j][k] < 0)
                 {
                     break;
                 }
                 if (i % 2 == firstPlayer % 2)
                 {
-                    result = fmax(result, taskRecvBuffer[j][k]);
+                    result = fmax(result, winpercentageArrayRecvBuffer[j][k]);
                 }
                 else
                 {
-                    result += taskRecvBuffer[j][k];
+                    result += winpercentageArrayRecvBuffer[j][k];
                     resultCount++;
                 }
             }
@@ -381,21 +377,23 @@ void buildParallelTree(struct knot *startKnot)
             {
                 result = result / resultCount;
             }
-            resultSendBuffer[j] = result;
+            winpercentageSendBuffer[j] = result;
         }
-        free(taskRecvBuffer);
+        free(winpercentageArrayRecvBuffer);
 
-        resultRecvBuffer = malloc(sizeof(*resultRecvBuffer) * turnSizes[i]);
-        MPI_Gatherv(resultSendBuffer, recvCnt, MPI_DOUBLE, resultRecvBuffer, sendCnts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-        free(resultSendBuffer);
+        winpercentageRecvBuffer = malloc(sizeof(*winpercentageRecvBuffer) * turnSizes[i]);
+        MPI_Gatherv(winpercentageSendBuffer, recvCnt, MPI_DOUBLE, winpercentageRecvBuffer, sendCnts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        free(winpercentageSendBuffer);
 
         if (rank == 0)
         {
             for (int j = 0; j < turnSizes[i]; j++)
             {
-                turns[i][j]->winPercentage = resultRecvBuffer[j];
+                turns[i][j]->winPercentage = winpercentageRecvBuffer[j];
             }
         }
-        free(resultRecvBuffer);
+        free(winpercentageRecvBuffer);
     }
+    free(sendCnts);
+    free(displacements);
 }
