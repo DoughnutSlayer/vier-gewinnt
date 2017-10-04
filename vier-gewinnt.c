@@ -77,8 +77,12 @@ int getNumberInput()
     int validInput = 0;
     int input;
     validInput = scanf("%d", &input);
-    while (validInput <= 0)
+    while (input < 0 || input > (boardWidth - 1) || !validInput)
     {
+        if (!validInput)
+        {
+            scanf("%*s");
+        }
         printf("%s", invalidInputMessage);
         fflush(NULL);
         validInput = scanf("%d", &input);
@@ -109,7 +113,7 @@ int main(int argc, char *argv[])
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     if (rank == 0)
     {
-        sprintf(&invalidInputMessage, "Please enter a number between 0 and %d: ", boardWidth - 1);
+        sprintf(invalidInputMessage, "Please enter a number between 0 and %d: ", boardWidth - 1);
 
         struct gameboard emptyBoard = {0};
         emptyBoard.nextPlayer = 1;
