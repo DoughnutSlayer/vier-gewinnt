@@ -368,6 +368,51 @@ void calculateTurns(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
     free(displacements);
 }
 
+void calculateWinpercentages(MPI_Datatype *winpercentageArrayType)
+{
+    int recvCnt;
+    int *sendCnts = malloc(sizeof(*sendCnts) * worldSize);
+    int *displacements = malloc(sizeof(*displacements) * worldSize);
+    double (*taskSendBuffer)[BOARD_WIDTH];
+    double (*taskRecvBuffer)[BOARD_WIDTH];
+    double *resultSendBuffer;
+    double *resultRecvBuffer;
+    turnCounter--;
+    MPI_Bcast(&turnCounter, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    for (int turnIndex = turnCounter; turnIndex >= 0; turnIndex--)
+    {
+        taskSendBuffer = malloc(sizeof(*taskSendBuffer) * turnSizes[turnIndex]);
+        if (rank == 0)
+        {
+            prepareWinpercentageArraySend(turnIndex, taskSendBuffer, sendCnts, displacements);
+        }
+
+        MPI_Scatter(sendCnts, 1, MPI_INT, &recvCnt, 1, MPI_INT, 0, MPI_COMM_WORLD);
+        taskRecvBuffer = malloc(sizeof(*taskRecvBuffer) * recvCnt);
+        MPI_Scatterv(taskSendBuffer, sendCnts, displacements, *winpercentageArrayType, taskRecvBuffer, recvCnt, *winpercentageArrayType, 0, MPI_COMM_WORLD);
+        free(taskSendBuffer);
+
+        resultSendBuffer = malloc(sizeof(*resultSendBuffer) * recvCnt);
+        calculatePredecessorWinpercentages(turnIndex, recvCnt, taskRecvBuffer, resultSendBuffer);
+        free(taskRecvBuffer);
+
+        resultRecvBuffer = malloc(sizeof(*resultRecvBuffer) * turnSizes[turnIndex]);
+        MPI_Gatherv(resultSendBuffer, recvCnt, MPI_DOUBLE, resultRecvBuffer, sendCnts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+        free(resultSendBuffer);
+
+        if (rank == 0)
+        {
+            for (int j = 0; j < turnSizes[turnIndex]; j++)
+            {
+                turns[turnIndex][j]->winPercentage = resultRecvBuffer[j];
+            }
+        }
+        free(resultRecvBuffer);
+    }
+    free(sendCnts);
+    free(displacements);
+}
+
 void buildParallelTree(struct knot *startKnot)
 {
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -394,46 +439,5 @@ void buildParallelTree(struct knot *startKnot)
     }
 
     calculateTurns(&MPI_GAMEBOARD, &MPI_GAMEBOARD_ARRAY);
-
-    int recvCnt;
-    int *sendCnts = malloc(sizeof(*sendCnts) * worldSize);
-    int *displacements = malloc(sizeof(*displacements) * worldSize);
-    double (*winpercentageArraySendBuffer)[BOARD_WIDTH];
-    double (*winpercentageArrayRecvBuffer)[BOARD_WIDTH];
-    double *winpercentageSendBuffer;
-    double *winpercentageRecvBuffer;
-    turnCounter--;
-    MPI_Bcast(&turnCounter, 1, MPI_INT, 0, MPI_COMM_WORLD);
-    for (int turnIndex = turnCounter; turnIndex >= 0; turnIndex--)
-    {
-        winpercentageArraySendBuffer = malloc(sizeof(*winpercentageArraySendBuffer) * turnSizes[turnIndex]);
-        if (rank == 0)
-        {
-            prepareWinpercentageArraySend(turnIndex, winpercentageArraySendBuffer, sendCnts, displacements);
-        }
-
-        MPI_Scatter(sendCnts, 1, MPI_INT, &recvCnt, 1, MPI_INT, 0, MPI_COMM_WORLD);
-        winpercentageArrayRecvBuffer = malloc(sizeof(*winpercentageArrayRecvBuffer) * recvCnt);
-        MPI_Scatterv(winpercentageArraySendBuffer, sendCnts, displacements, MPI_WINCHANCE_ARRAY, winpercentageArrayRecvBuffer, recvCnt, MPI_WINCHANCE_ARRAY, 0, MPI_COMM_WORLD);
-        free(winpercentageArraySendBuffer);
-
-        winpercentageSendBuffer = malloc(sizeof(*winpercentageSendBuffer) * recvCnt);
-        calculatePredecessorWinpercentages(turnIndex, recvCnt, winpercentageArrayRecvBuffer, winpercentageSendBuffer);
-        free(winpercentageArrayRecvBuffer);
-
-        winpercentageRecvBuffer = malloc(sizeof(*winpercentageRecvBuffer) * turnSizes[turnIndex]);
-        MPI_Gatherv(winpercentageSendBuffer, recvCnt, MPI_DOUBLE, winpercentageRecvBuffer, sendCnts, displacements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-        free(winpercentageSendBuffer);
-
-        if (rank == 0)
-        {
-            for (int j = 0; j < turnSizes[turnIndex]; j++)
-            {
-                turns[turnIndex][j]->winPercentage = winpercentageRecvBuffer[j];
-            }
-        }
-        free(winpercentageRecvBuffer);
-    }
-    free(sendCnts);
-    free(displacements);
+    calculateWinpercentages(&MPI_WINCHANCE_ARRAY);
 }
