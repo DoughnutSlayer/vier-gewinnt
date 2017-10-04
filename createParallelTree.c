@@ -126,6 +126,7 @@ void setStartTurn(struct knot *startKnot)
 
 void refreshQueues()
 {
+    currentKnots = realloc(currentKnots, sizeof(*currentKnots) * currentKnotsCount);
     turns[turnCounter] = currentKnots;
     turnSizes[turnCounter] = currentKnotsCount;
     turnCounter++;
