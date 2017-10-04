@@ -415,28 +415,25 @@ void calculateWinpercentages(MPI_Datatype *winpercentageArrayType)
 
 void buildParallelTree(struct knot *startKnot)
 {
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &worldSize);
     if (worldSize == 1)
     {
         buildTree(startKnot);
         return;
     }
 
-    if (rank == 0)
-    {
-        setStartTurn(startKnot);
-        firstPlayer = (startKnot->gameboard->nextPlayer - turnCounter % 2);
-    }
-    MPI_Bcast(&firstPlayer, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &worldSize);
 
     MPI_Datatype MPI_GAMEBOARD, MPI_GAMEBOARD_ARRAY, MPI_WINCHANCE_ARRAY;
     defineMPIDatatypes(&MPI_GAMEBOARD, &MPI_GAMEBOARD_ARRAY, &MPI_WINCHANCE_ARRAY);
 
     if (rank == 0)
     {
+        setStartTurn(startKnot);
+        firstPlayer = (startKnot->gameboard->nextPlayer - turnCounter % 2);
         pInitializeQueues(startKnot);
     }
+    MPI_Bcast(&firstPlayer, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
     calculateTurns(&MPI_GAMEBOARD, &MPI_GAMEBOARD_ARRAY);
     calculateWinpercentages(&MPI_WINCHANCE_ARRAY);
