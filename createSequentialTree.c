@@ -6,9 +6,9 @@
 
 extern const int boardWidth;
 
-//Queue 1 for current knots
+// Queue 1 for current knots
 struct knot **currentKnots;
-//Queue 2 for next knots
+// Queue 2 for next knots
 struct knot **nextKnots;
 
 int nextKnotsCount;
@@ -27,7 +27,7 @@ int checkForDuplicate(struct knot *knot)
 
 void setSuccessorsOf(struct knot *knot)
 {
-    //The number of successors that "knot" currently has
+    // The number of successors that "knot" currently has
     knot->successorsCount = 0;
     knot->successors = malloc(sizeof(knot->successors) * boardWidth);
     for (int lane = 0; lane < boardWidth; lane++)
@@ -38,7 +38,7 @@ void setSuccessorsOf(struct knot *knot)
         {
             calculateHash(successor);
             int duplicateSuccessorIndex = checkForDuplicate(successor);
-            if(duplicateSuccessorIndex == -1)
+            if (duplicateSuccessorIndex == -1)
             {
                 successor->winPercentage = -1;
                 knot->successors[knot->successorsCount] = successor;
@@ -61,7 +61,8 @@ void setSuccessorsOf(struct knot *knot)
 
     if (knot->successorsCount > 0)
     {
-        knot->successors = realloc(knot->successors, sizeof(knot) * knot->successorsCount);
+        knot->successors =
+          realloc(knot->successors, sizeof(knot) * knot->successorsCount);
     }
     else
     {
@@ -108,6 +109,6 @@ void buildTree(struct knot *startKnot)
         currentKnots = nextKnots;
         setNextKnots();
     }
-    //Hier sind die currentKnots die letzte Generation von Knoten
+    // Hier sind die currentKnots die letzte Generation von Knoten
     calculateWinPercentage(startKnot);
 }

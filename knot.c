@@ -1,7 +1,7 @@
+#include "knot.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include "gameboard.h"
-#include "knot.h"
 
 extern const int boardWidth;
 extern const int boardHeight;

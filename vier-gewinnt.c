@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "mpi.h"
 #include "createParallelTree.h"
 #include "gameboard.h"
 #include "knot.h"
+#include "mpi.h"
 
 extern const int boardWidth, boardHeight;
 
@@ -92,7 +92,6 @@ int getNumberInput()
 
 void makePlayerTurn()
 {
-
     struct gameboard *result = NULL;
     result = put(playerKnot.gameboard, getNumberInput());
     while (!result)
@@ -113,7 +112,8 @@ int main(int argc, char *argv[])
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     if (rank == 0)
     {
-        sprintf(invalidInputMessage, "Please enter a number between 0 and %d: ", boardWidth - 1);
+        sprintf(invalidInputMessage, "Please enter a number between 0 and %d: ",
+                boardWidth - 1);
 
         struct gameboard emptyBoard = {0};
         emptyBoard.nextPlayer = 1;
@@ -139,7 +139,8 @@ int main(int argc, char *argv[])
                 makePlayerTurn();
                 for (int i = 0; i < playerKnot.successorsCount; i++)
                 {
-                    if (!strcmp(playerKnot.gameboardHash, playerKnot.successors[i]->gameboardHash))
+                    if (!strcmp(playerKnot.gameboardHash,
+                                playerKnot.successors[i]->gameboardHash))
                     {
                         playerKnot = *(playerKnot.successors[i]);
                         break;
@@ -150,10 +151,12 @@ int main(int argc, char *argv[])
             {
                 printPlayerGameboard();
                 int bestSuccessorIndex = 0;
-                //printf("Player Successors: %d\n", playerKnot.successorsCount);
+                // printf("Player Successors: %d\n",
+                // playerKnot.successorsCount);
                 for (int i = 1; i < playerKnot.successorsCount; i++)
                 {
-                    if (playerKnot.successors[bestSuccessorIndex]->winPercentage < playerKnot.successors[i]->winPercentage)
+                    if (playerKnot.successors[bestSuccessorIndex]->winPercentage
+                        < playerKnot.successors[i]->winPercentage)
                     {
                         bestSuccessorIndex = i;
                     }

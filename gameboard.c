@@ -1,10 +1,11 @@
-#include <stdlib.h>
 #include "gameboard.h"
+#include <stdlib.h>
 
 const int boardWidth = BOARD_WIDTH;
 const int boardHeight = BOARD_HEIGHT;
 
-int updateSearchStatus(int *currentPlayer, int *foundPieces, int currentPiece, struct gameboard *board)
+int updateSearchStatus(int *currentPlayer, int *foundPieces, int currentPiece,
+                       struct gameboard *board)
 {
     if (!currentPiece)
     {
@@ -42,7 +43,8 @@ int checkRowsForMatch(int columnCount, int rowCount, struct gameboard *board)
         foundPieces = 0;
         for (int columnIndex = 0; columnIndex < columnCount; columnIndex++)
         {
-            if (updateSearchStatus(&currentPlayer, &foundPieces, board->lanes[columnIndex][rowIndex], board))
+            if (updateSearchStatus(&currentPlayer, &foundPieces,
+                                   board->lanes[columnIndex][rowIndex], board))
             {
                 return 1;
             }
@@ -65,7 +67,8 @@ int checkColumnsForMatch(int columnCount, int rowCount, struct gameboard *board)
         foundPieces = 0;
         for (int rowIndex = 0; rowIndex < rowCount; rowIndex++)
         {
-            if (updateSearchStatus(&currentPlayer, &foundPieces, board->lanes[columnIndex][rowIndex], board))
+            if (updateSearchStatus(&currentPlayer, &foundPieces,
+                                   board->lanes[columnIndex][rowIndex], board))
             {
                 return 1;
             }
@@ -74,7 +77,8 @@ int checkColumnsForMatch(int columnCount, int rowCount, struct gameboard *board)
     return 0;
 }
 
-int checkForwardDiagonalsForMatch(int columnCount, int rowCount, struct gameboard *board)
+int checkForwardDiagonalsForMatch(int columnCount, int rowCount,
+                                  struct gameboard *board)
 {
     if (columnCount < 4 || rowCount < 4)
     {
@@ -94,7 +98,8 @@ int checkForwardDiagonalsForMatch(int columnCount, int rowCount, struct gameboar
         foundPieces = 0;
         while (rowIndex >= 0 && columnIndex < columnCount)
         {
-            if (updateSearchStatus(&currentPlayer, &foundPieces, board->lanes[columnIndex][rowIndex], board))
+            if (updateSearchStatus(&currentPlayer, &foundPieces,
+                                   board->lanes[columnIndex][rowIndex], board))
             {
                 return 1;
             }
@@ -113,7 +118,8 @@ int checkForwardDiagonalsForMatch(int columnCount, int rowCount, struct gameboar
     return 0;
 }
 
-int checkBackwardDiagonalsForMatch(int columnCount, int rowCount, struct gameboard *board)
+int checkBackwardDiagonalsForMatch(int columnCount, int rowCount,
+                                   struct gameboard *board)
 {
     if (columnCount < 4 || rowCount < 4)
     {
@@ -133,7 +139,8 @@ int checkBackwardDiagonalsForMatch(int columnCount, int rowCount, struct gameboa
         foundPieces = 0;
         while (rowIndex >= 0 && columnIndex >= 0)
         {
-            if (updateSearchStatus(&currentPlayer, &foundPieces, board->lanes[columnIndex][rowIndex], board))
+            if (updateSearchStatus(&currentPlayer, &foundPieces,
+                                   board->lanes[columnIndex][rowIndex], board))
             {
                 return 1;
             }
@@ -154,15 +161,15 @@ int checkBackwardDiagonalsForMatch(int columnCount, int rowCount, struct gameboa
 
 int boardIsFull(struct gameboard *board)
 {
-  for (int i = 0; i < boardWidth; i++)
-  {
-    if(!board->lanes[i][0])
+    for (int i = 0; i < boardWidth; i++)
     {
-      return 0;
+        if (!board->lanes[i][0])
+        {
+            return 0;
+        }
     }
-  }
-  board->isWonBy = 3;
-  return 1;
+    board->isWonBy = 3;
+    return 1;
 }
 
 void updateGameFinishedStatus(struct gameboard *board)
@@ -172,14 +179,14 @@ void updateGameFinishedStatus(struct gameboard *board)
         return;
     }
 
-    int columnCount = sizeof(board->lanes)/sizeof(board->lanes[0]);
-    int rowCount = sizeof(board->lanes[0])/sizeof(board->lanes[0][0]);
+    int columnCount = sizeof(board->lanes) / sizeof(board->lanes[0]);
+    int rowCount = sizeof(board->lanes[0]) / sizeof(board->lanes[0][0]);
 
     if (checkRowsForMatch(columnCount, rowCount, board)
         || checkColumnsForMatch(columnCount, rowCount, board)
         || checkForwardDiagonalsForMatch(columnCount, rowCount, board)
         || checkBackwardDiagonalsForMatch(columnCount, rowCount, board)
-	      || boardIsFull(board))
+        || boardIsFull(board))
     {
     }
 }
@@ -192,10 +199,11 @@ struct gameboard *put(struct gameboard *board, int laneIndex)
     }
 
     int *updateLane = board->lanes[laneIndex];
-    int laneSize = sizeof(board->lanes[laneIndex])/sizeof(board->lanes[laneIndex][0]);
+    int laneSize =
+      sizeof(board->lanes[laneIndex]) / sizeof(board->lanes[laneIndex][0]);
     int rowIndex = 0;
 
-    while(rowIndex < laneSize && updateLane[rowIndex] == 0)
+    while (rowIndex < laneSize && updateLane[rowIndex] == 0)
     {
         rowIndex += 1;
     }

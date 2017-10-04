@@ -32,7 +32,9 @@ void calculateWinPercentage(struct knot *knot)
         }
         else
         {
-            result = (result > knot->successors[i]->winPercentage) ? result : knot->successors[i]->winPercentage;
+            result = (result > knot->successors[i]->winPercentage)
+                       ? result
+                       : knot->successors[i]->winPercentage;
         }
     }
     if (knot->gameboard->nextPlayer == 1)
