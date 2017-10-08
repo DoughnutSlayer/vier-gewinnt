@@ -95,22 +95,6 @@ void initializeNextKnots()
     }
 }
 
-struct knot *getCurrentKnot(struct gameboard *board)
-{
-    struct knot *toFind = malloc(sizeof(*toFind));
-    toFind->gameboard = board;
-    calculateHash(toFind);
-    for (int i = 0; i < currentKnotsCount; i++)
-    {
-        if (!strcmp(currentKnots[i]->gameboardHash, toFind->gameboardHash))
-        {
-            free(toFind);
-            return currentKnots[i];
-        }
-    }
-    return NULL;
-}
-
 void setStartTurn(struct knot *startKnot)
 {
     int index = 0;
