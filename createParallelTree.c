@@ -29,18 +29,6 @@ int currentKnotsCount;
 
 int nextKnotsCount;
 
-int getCurrentTurnDuplicateIndex(struct knot *knot)
-{
-    for (int i = 0; i < nextKnotsCount; i++)
-    {
-        if (!strcmp(nextKnots[i]->gameboardHash, knot->gameboardHash))
-        {
-            return i;
-        }
-    }
-    return -1;
-}
-
 void setStartTurn(struct knot *startKnot)
 {
     int index = 0;
@@ -223,13 +211,7 @@ void fillNextKnots(struct gameboard (*successorArrays)[BOARD_WIDTH])
             successor->gameboard = malloc(sizeof(*(successor->gameboard)));
             *(successor->gameboard) = successorArrays[i][j];
             calculateHash(successor);
-            int duplicateIndex = getCurrentTurnDuplicateIndex(successor);
-            if (duplicateIndex >= 0)
-            {
-                free(successor);
-                successor = nextKnots[duplicateIndex];
-            }
-            else if (!successor->gameboard->isWonBy)
+            if (!successor->gameboard->isWonBy)
             {
                 nextKnots[nextKnotsCount] = successor;
                 nextKnotsCount += 1;
