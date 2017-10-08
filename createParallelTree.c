@@ -160,7 +160,7 @@ void defineMPIDatatypes(MPI_Datatype *boardType, MPI_Datatype *boardArrayType,
                            boardType);
     MPI_Type_commit(boardType);
 
-    MPI_Type_contiguous(boardWidth + 1, *boardType, boardArrayType);
+    MPI_Type_contiguous(boardWidth, *boardType, boardArrayType);
     MPI_Type_commit(boardArrayType);
 
     MPI_Type_contiguous(boardWidth, MPI_DOUBLE, winChanceArrayType);
@@ -223,16 +223,15 @@ void prepareWinpercentageArraySend(
 
 void calculateBoardSuccessors(
   int boardCount, struct gameboard *boards,
-  struct gameboard (*boardSuccessorArrays)[BOARD_WIDTH + 1])
+  struct gameboard (*boardSuccessorArrays)[BOARD_WIDTH])
 {
     for (int i = 0; i < boardCount; i++)
     {
         struct gameboard *currentBoard = &boards[i];
-        boardSuccessorArrays[i][0] = *currentBoard;
         for (int j = 0; j < boardWidth; j++)
         {
             struct gameboard *createdBoard = put(currentBoard, j);
-            boardSuccessorArrays[i][j + 1] =
+            boardSuccessorArrays[i][j] =
               (createdBoard) ? *createdBoard : zeroBoard;
             free(createdBoard);
         }
@@ -271,11 +270,11 @@ void calculatePredecessorWinpercentages(
     }
 }
 
-void fillNextKnots(struct gameboard (*successorArrays)[BOARD_WIDTH + 1])
+void fillNextKnots(struct gameboard (*successorArrays)[BOARD_WIDTH])
 {
     for (int i = 0; i < currentKnotsCount; i++)
     {
-        struct knot *predecessor = getCurrentKnot(&(successorArrays[i][0]));
+        struct knot *predecessor = currentKnots[i];
         predecessor->successors =
           malloc(sizeof(predecessor->successors) * boardWidth);
         predecessor->successorsCount = 0;
@@ -283,7 +282,7 @@ void fillNextKnots(struct gameboard (*successorArrays)[BOARD_WIDTH + 1])
         {
             break;
         }
-        for (int j = 1; j < (boardWidth + 1); j++)
+        for (int j = 0; j < (boardWidth); j++)
         {
             if (successorArrays[i][j].nextPlayer == 0)
             {
@@ -334,8 +333,8 @@ void calculateTurns(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
     int *displacements = malloc(sizeof(*sendCnts) * worldSize);
     struct gameboard *taskRecvBuffer;
     int recvCnt;
-    struct gameboard(*resultSendBuffer)[BOARD_WIDTH + 1];
-    struct gameboard(*resultRecvBuffer)[BOARD_WIDTH + 1];
+    struct gameboard(*resultSendBuffer)[BOARD_WIDTH];
+    struct gameboard(*resultRecvBuffer)[BOARD_WIDTH];
     while (!treeFinished)
     {
         if (rank == 0)
