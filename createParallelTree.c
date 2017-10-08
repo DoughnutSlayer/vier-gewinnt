@@ -41,60 +41,6 @@ int getCurrentTurnDuplicateIndex(struct knot *knot)
     return -1;
 }
 
-void initializeSuccessors(struct knot *knot)
-{
-    knot->successorsCount = 0;
-    knot->successors = malloc(sizeof(knot->successors) * boardWidth);
-    for (int lane = 0; lane < boardWidth; lane++)
-    {
-        struct knot *successor = malloc(sizeof(*successor));
-        successor->gameboard = put(knot->gameboard, lane);
-        if (successor->gameboard == NULL)
-        {
-            free(successor);
-            continue;
-        }
-
-        calculateHash(successor);
-        int duplicateSuccessorIndex = getCurrentTurnDuplicateIndex(successor);
-        if (duplicateSuccessorIndex == -1)
-        {
-            successor->winPercentage = -1;
-            knot->successors[knot->successorsCount] = successor;
-            nextKnots[nextKnotsCount] = successor;
-            nextKnotsCount++;
-        }
-        else
-        {
-            free(successor);
-            successor = nextKnots[duplicateSuccessorIndex];
-            knot->successors[knot->successorsCount] = successor;
-        }
-        knot->successorsCount++;
-    }
-
-    if (knot->successorsCount == 0)
-    {
-        free(knot->successors);
-        knot->successors = NULL;
-    }
-}
-
-void initializeNextKnots()
-{
-    nextKnots = malloc(sizeof(currentKnots) * currentKnotsCount * boardWidth);
-    for (int currentKnot = 0; currentKnot < currentKnotsCount; currentKnot++)
-    {
-        initializeSuccessors(currentKnots[currentKnot]);
-    }
-
-    if (nextKnotsCount == 0)
-    {
-        free(nextKnots);
-        nextKnots = NULL;
-    }
-}
-
 void setStartTurn(struct knot *startKnot)
 {
     int index = 0;
@@ -126,7 +72,8 @@ void pInitializeQueues(struct knot *root)
     currentKnots = malloc(sizeof(root));
     currentKnots[0] = root;
     currentKnotsCount = 1;
-    initializeNextKnots(currentKnots);
+    nextKnots = malloc(sizeof(*nextKnots) * currentKnotsCount * boardWidth);
+    nextKnotsCount = 0;
 }
 
 void defineMPIDatatypes(MPI_Datatype *boardType, MPI_Datatype *boardArrayType,
