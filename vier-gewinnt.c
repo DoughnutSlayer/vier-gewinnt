@@ -118,6 +118,9 @@ int main(int argc, char *argv[])
         struct gameboard emptyBoard = {0};
         emptyBoard.nextPlayer = 1;
         playerKnot.gameboard = &emptyBoard;
+        playerKnot.successors =
+          malloc(sizeof(*(playerKnot.successors)) * boardWidth);
+        playerKnot.successorsCount = 0;
         calculateHash(&playerKnot);
 
         printPlayerPrompt();
