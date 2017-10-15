@@ -204,6 +204,11 @@ void calculatePredecessorWinpercentages(
     {
         double result = 0;
         int resultCount = 0;
+        if (winpercentageArrays[j][0] < 0)
+        {
+            predecessorWinpercentages[j] = -1;
+            continue;
+        }
         for (int k = 0; k < boardWidth; k++)
         {
             if (winpercentageArrays[j][k] < 0)
@@ -212,15 +217,15 @@ void calculatePredecessorWinpercentages(
             }
             if (turnIndex % 2 == firstPlayer % 2)
             {
-                result = fmax(result, winpercentageArrays[j][k]);
-            }
-            else
-            {
                 result += winpercentageArrays[j][k];
                 resultCount++;
             }
+            else
+            {
+                result = fmax(result, winpercentageArrays[j][k]);
+            }
         }
-        if (!(turnIndex % 2 == firstPlayer % 2))
+        if (turnIndex % 2 == firstPlayer % 2)
         {
             result = result / resultCount;
         }
@@ -370,7 +375,10 @@ void calculateWinpercentages(MPI_Datatype *winpercentageArrayType)
         {
             for (int j = 0; j < turnSizes[turnIndex]; j++)
             {
-                turns[turnIndex][j]->winPercentage = resultRecvBuffer[j];
+                if (resultRecvBuffer[j] >= 0)
+                {
+                    turns[turnIndex][j]->winPercentage = resultRecvBuffer[j];
+                }
             }
         }
         free(resultRecvBuffer);
