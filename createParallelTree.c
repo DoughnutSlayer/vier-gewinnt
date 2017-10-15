@@ -103,7 +103,7 @@ void prepareBoardSend(struct gameboard *boardSendBuffer, int *sendCnts,
     for (int i = 1; i < worldSize; i++)
     {
         int sendCount = gameboardsPerProcess;
-        if (i < currentGameboardsCount % (worldSize - 1))
+        if (i <= currentGameboardsCount % (worldSize - 1))
         {
             sendCount += 1;
         }
