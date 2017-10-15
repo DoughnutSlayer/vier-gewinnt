@@ -9,8 +9,8 @@ endif
 CC = mpicc
 
 CFLAGS = -Wall -std=c99 -DBOARD_WIDTH=$(BOARD_WIDTH) -DBOARD_HEIGHT=$(BOARD_HEIGHT)
-DEPS = createParallelTree.h createSequentialTree.h gameboard.h knot.h calculateSequentialWinPercentage.h
-OBJS = createParallelTree.o createSequentialTree.o gameboard.o knot.o calculateSequentialWinPercentage.o vier-gewinnt.o
+DEPS = createParallelTree.h createSequentialTree.h gameboard.h calculateSequentialWinPercentage.h knot.h
+OBJS = createParallelTree.o createSequentialTree.o gameboard.o calculateSequentialWinPercentage.o vier-gewinnt.o
 
 vier-gewinnt : $(OBJS)
 	$(CC) $(CFLAGS) -lm -o vier-gewinnt $(OBJS)
@@ -26,9 +26,6 @@ createSequentialTree.o : createSequentialTree.c $(DEPS)
 
 gameboard.o : gameboard.c $(DEPS)
 	$(CC) $(CFLAGS) -c gameboard.c
-
-knot.o : knot.c $(DEPS)
-	$(CC) $(CFLAGS) -c knot.c
 
 vier-gewinnt.o : vier-gewinnt.c $(DEPS)
 	$(CC) $(CFLAGS) -c vier-gewinnt.c

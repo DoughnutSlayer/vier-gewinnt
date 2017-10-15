@@ -17,7 +17,7 @@ int checkForDuplicate(struct knot *knot)
 {
     for (int i = 0; i < nextKnotsCount; i++)
     {
-        if (!strcmp(nextKnots[i]->gameboardHash, knot->gameboardHash))
+        if (!strcmp(nextKnots[i]->gameboard->hash, knot->gameboard->hash))
         {
             return i;
         }
@@ -36,7 +36,7 @@ void setSuccessorsOf(struct knot *knot)
         successor->gameboard = put(knot->gameboard, lane);
         if (successor->gameboard != NULL)
         {
-            calculateHash(successor);
+            calculateHash(successor->gameboard);
             int duplicateSuccessorIndex = checkForDuplicate(successor);
             if (duplicateSuccessorIndex == -1)
             {

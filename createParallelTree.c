@@ -32,9 +32,9 @@ int nextGameboardsCount;
 void setStartTurn(struct knot *startKnot)
 {
     int index = 0;
-    while (startKnot->gameboardHash[index] != '\0')
+    while (startKnot->gameboard->hash[index] != '\0')
     {
-        if (startKnot->gameboardHash[index] != '0')
+        if (startKnot->gameboard->hash[index] != '0')
         {
             turnCounter++;
         }
@@ -66,17 +66,19 @@ void pInitializeQueues(struct knot *root)
 void defineMPIDatatypes(MPI_Datatype *boardType, MPI_Datatype *boardArrayType,
                         MPI_Datatype *winChanceArrayType)
 {
-    int boardBlocklengths[4] = {
+    int boardBlocklengths[5] = {
       sizeof(((struct gameboard *) 0)->predecessorIndex) / sizeof(int),
       sizeof(((struct gameboard *) 0)->lanes) / sizeof(int),
+      sizeof(((struct gameboard *) 0)->hash) / sizeof(char),
       sizeof(((struct gameboard *) 0)->isWonBy) / sizeof(int),
       sizeof(((struct gameboard *) 0)->nextPlayer) / sizeof(int)};
-    MPI_Aint boardDisplacements[4] = {
+    MPI_Aint boardDisplacements[5] = {
       offsetof(struct gameboard, predecessorIndex),
-      offsetof(struct gameboard, lanes), offsetof(struct gameboard, isWonBy),
+      offsetof(struct gameboard, lanes), offsetof(struct gameboard, hash),
+      offsetof(struct gameboard, isWonBy),
       offsetof(struct gameboard, nextPlayer)};
-    MPI_Datatype boardTypes[4] = {MPI_INT, MPI_INT, MPI_INT, MPI_INT};
-    MPI_Type_create_struct(4, boardBlocklengths, boardDisplacements, boardTypes,
+    MPI_Datatype boardTypes[5] = {MPI_INT, MPI_INT, MPI_CHAR, MPI_INT, MPI_INT};
+    MPI_Type_create_struct(5, boardBlocklengths, boardDisplacements, boardTypes,
                            boardType);
     MPI_Type_commit(boardType);
 
@@ -156,6 +158,7 @@ void calculateBoardSuccessors(
             if (createdBoard)
             {
                 createdBoard->predecessorIndex = firstPredecessorIndex + i;
+                calculateHash(createdBoard);
                 boardSuccessorArrays[i][j] = *createdBoard;
             }
             else
@@ -179,7 +182,6 @@ void addCurrentGameboardsTurn()
           malloc(sizeof(*(successor->successors)) * boardWidth);
         successor->successorsCount = 0;
         successor->gameboard = currentGameboards[i];
-        calculateHash(successor);
         if (successor->gameboard->isWonBy == 2)
         {
             successor->winPercentage = 100;
