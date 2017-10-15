@@ -95,13 +95,15 @@ void prepareBoardSend(struct gameboard *boardSendBuffer, int *sendCnts,
         boardSendBuffer[i] = *(currentGameboards[i]);
     }
 
-    int gameboardsPerProcess = currentGameboardsCount / worldSize;
+    int gameboardsPerProcess = currentGameboardsCount / (worldSize - 1);
     int displacement = 0;
+    displacements[0] = 0;
+    sendCnts[0] = 0;
     // TODO Limit zum senden
-    for (int i = 0; i < worldSize; i++)
+    for (int i = 1; i < worldSize; i++)
     {
         int sendCount = gameboardsPerProcess;
-        if (i < currentGameboardsCount % worldSize)
+        if (i < currentGameboardsCount % (worldSize - 1))
         {
             sendCount += 1;
         }
@@ -286,11 +288,14 @@ void calculateTurns(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
         }
 
         resultSendBuffer = malloc(sizeof(resultSendBuffer[0]) * recvCnt);
-        calculateBoardSuccessors(recvCnt, taskRecvBuffer, displacement,
-                                 resultSendBuffer);
         if (rank == 0)
         {
             addCurrentGameboardsTurn();
+        }
+        else
+        {
+            calculateBoardSuccessors(recvCnt, taskRecvBuffer, displacement,
+                                     resultSendBuffer);
         }
         free(taskRecvBuffer);
 
