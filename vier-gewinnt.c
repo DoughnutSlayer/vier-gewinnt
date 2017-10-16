@@ -10,8 +10,8 @@ extern const int boardWidth, boardHeight;
 
 char invalidInputMessage[42];
 
-struct knot playerKnot = {.winPercentage = 0};
-struct gameboard playerGameboard = {.nextPlayer = 1};
+struct knot *playerKnot;
+struct gameboard *playerGameboard;
 
 void printPlayerGameboard()
 {
@@ -34,11 +34,11 @@ void printPlayerGameboard()
         for (int columnIndex = 0; columnIndex < boardWidth; columnIndex++)
         {
             char boardPiece = ' ';
-            if (playerGameboard.lanes[columnIndex][rowIndex] == 1)
+            if (playerGameboard->lanes[columnIndex][rowIndex] == 1)
             {
                 boardPiece = 'O';
             }
-            else if (playerGameboard.lanes[columnIndex][rowIndex] == 2)
+            else if (playerGameboard->lanes[columnIndex][rowIndex] == 2)
             {
                 boardPiece = 'X';
             }
@@ -94,15 +94,15 @@ int getNumberInput()
 void makePlayerTurn()
 {
     struct gameboard *result = NULL;
-    result = put(&playerGameboard, getNumberInput());
+    result = put(playerGameboard, getNumberInput());
     while (!result)
     {
         printf("%s", invalidInputMessage);
         fflush(NULL);
-        result = put(&playerGameboard, getNumberInput());
+        result = put(playerGameboard, getNumberInput());
     }
-    playerGameboard = *result;
-    calculateHash(&playerGameboard);
+    *playerGameboard = *result;
+    calculateHash(playerGameboard);
     free(result);
 }
 
@@ -126,7 +126,14 @@ int main(int argc, char *argv[])
         sprintf(invalidInputMessage, "Please enter a number between 0 and %d: ",
                 boardWidth - 1);
 
-        calculateHash(&playerGameboard);
+        struct knot initialKnot = {.winPercentage = 0};
+        playerKnot = malloc(sizeof(*playerKnot));
+        *playerKnot = initialKnot;
+
+        struct gameboard initialGameboard = {.nextPlayer = 1};
+        playerGameboard = malloc(sizeof(*playerGameboard));
+        *playerGameboard = initialGameboard;
+        calculateHash(playerGameboard);
 
         printPlayerPrompt();
         makePlayerTurn();
@@ -134,7 +141,7 @@ int main(int argc, char *argv[])
         printf("Calculating...\n");
     }
 
-    buildParallelTree(&playerKnot, &playerGameboard);
+    buildParallelTree(playerKnot, playerGameboard);
 
     /*if (rank == 0)
     {
