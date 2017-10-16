@@ -240,11 +240,6 @@ void fillNextGameboards(struct gameboard (*successorArrays)[BOARD_WIDTH])
     {
         for (int j = 0; j < (boardWidth); j++)
         {
-            if (successorArrays[i][j].nextPlayer == 0)
-            {
-                continue;
-            }
-
             struct gameboard *successor = malloc(sizeof(*successor));
             *successor = successorArrays[i][j];
             nextGameboards[nextGameboardsCount] = successor;
