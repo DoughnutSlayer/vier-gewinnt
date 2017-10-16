@@ -41,10 +41,18 @@ void setStartTurn(struct gameboard *startGameboard)
     }
 }
 
+void deleteCurrentGameboards()
+{
+    for (int i = 0; i < currentGameboardsCount; i++)
+    {
+        free(currentGameboards[i]);
+    }
+    free(currentGameboards);
+}
+
 void refreshQueues()
 {
-    currentGameboards = realloc(currentGameboards, sizeof(*currentGameboards)
-                                                     * currentGameboardsCount);
+    deleteCurrentGameboards();
     currentGameboards = nextGameboards;
     currentGameboardsCount = nextGameboardsCount;
     nextGameboards =
