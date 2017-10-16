@@ -15,14 +15,8 @@ OBJS = createParallelTree.o createSequentialTree.o gameboard.o calculateSequenti
 vier-gewinnt : $(OBJS)
 	$(CC) $(CFLAGS) -lm -o vier-gewinnt $(OBJS)
 
-calculateSequentialWinPercentage.o : calculateSequentialWinPercentage.c $(DEPS)
-	$(CC) $(CFLAGS) -c calculateSequentialWinPercentage.c
-
 createParallelTree.o : createParallelTree.c $(DEPS)
 	$(CC) $(CFLAGS) -c createParallelTree.c
-
-createSequentialTree.o : createSequentialTree.c $(DEPS)
-	$(CC) $(CFLAGS) -c createSequentialTree.c
 
 gameboard.o : gameboard.c $(DEPS)
 	$(CC) $(CFLAGS) -c gameboard.c

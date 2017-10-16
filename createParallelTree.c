@@ -3,7 +3,6 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
-#include "createSequentialTree.h"
 #include "gameboard.h"
 #include "knot.h"
 
@@ -406,12 +405,6 @@ void makeFirstTurn(struct knot *startKnot)
 
 void buildParallelTree(struct knot *startKnot)
 {
-    if (worldSize == 1)
-    {
-        buildTree(startKnot);
-        return;
-    }
-
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &worldSize);
 

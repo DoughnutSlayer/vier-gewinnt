@@ -109,8 +109,18 @@ void makePlayerTurn()
 int main(int argc, char *argv[])
 {
     MPI_Init(&argc, &argv);
-    int rank;
+    int rank, worldSize;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &worldSize);
+
+    if (worldSize < 2)
+    {
+        printf("Please start this program with at least two processes, for "
+               "example by using mpirun.\n");
+        MPI_Finalize();
+        return 0;
+    }
+
     if (rank == 0)
     {
         sprintf(invalidInputMessage, "Please enter a number between 0 and %d: ",
