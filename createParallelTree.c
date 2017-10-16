@@ -28,12 +28,12 @@ int currentGameboardsCount;
 
 int nextGameboardsCount;
 
-void setStartTurn(struct knot *startKnot)
+void setStartTurn(struct gameboard *startGameboard)
 {
     int index = 0;
-    while (startKnot->gameboard->hash[index] != '\0')
+    while (startGameboard->hash[index] != '\0')
     {
-        if (startKnot->gameboard->hash[index] != '0')
+        if (startGameboard->hash[index] != '0')
         {
             turnCounter++;
         }
@@ -414,7 +414,7 @@ void buildParallelTree(struct knot *startKnot)
 
     if (rank == 0)
     {
-        setStartTurn(startKnot);
+        setStartTurn(startGameboard);
         firstPlayer = (startKnot->gameboard->nextPlayer - turnCounter % 2);
         pInitializeQueues(startKnot);
         makeFirstTurn(startKnot);
