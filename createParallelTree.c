@@ -52,10 +52,10 @@ void refreshQueues()
     nextGameboardsCount = 0;
 }
 
-void pInitializeQueues(struct knot *root)
+void initializeQueues(struct gameboard *startGameboard)
 {
-    currentGameboards = malloc(sizeof(root->gameboard));
-    currentGameboards[0] = root->gameboard;
+    currentGameboards = malloc(sizeof(startGameboard));
+    currentGameboards[0] = startGameboard;
     currentGameboardsCount = 1;
     nextGameboards =
       malloc(sizeof(*nextGameboards) * currentGameboardsCount * boardWidth);
@@ -415,9 +415,9 @@ void buildParallelTree(struct knot *startKnot)
     if (rank == 0)
     {
         setStartTurn(startGameboard);
-        firstPlayer = (startKnot->gameboard->nextPlayer - turnCounter % 2);
-        pInitializeQueues(startKnot);
         makeFirstTurn(startKnot);
+        firstPlayer = (startGameboard->nextPlayer - turnCounter % 2);
+        initializeQueues(startGameboard);
     }
     MPI_Bcast(&firstPlayer, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
