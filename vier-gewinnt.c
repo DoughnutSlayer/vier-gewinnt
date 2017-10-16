@@ -10,7 +10,7 @@ extern const int boardWidth, boardHeight;
 
 char invalidInputMessage[42];
 
-struct knot playerKnot = {0};
+struct knot playerKnot = {.winPercentage = 0};
 struct gameboard playerGameboard = {.nextPlayer = 1};
 
 void printPlayerGameboard()
