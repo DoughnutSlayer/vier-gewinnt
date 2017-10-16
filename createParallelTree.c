@@ -406,7 +406,7 @@ void makeFirstTurn(struct knot *startKnot)
     turnCounter++;
 }
 
-void buildParallelTree(struct knot *startKnot)
+void buildParallelTree(struct knot *startKnot, struct gameboard *startGameboard)
 {
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &worldSize);
@@ -418,9 +418,9 @@ void buildParallelTree(struct knot *startKnot)
     if (rank == 0)
     {
         setStartTurn(startGameboard);
-        makeFirstTurn(startKnot);
         firstPlayer = (startGameboard->nextPlayer - turnCounter % 2);
         initializeQueues(startGameboard);
+        makeFirstTurn(startKnot);
     }
     MPI_Bcast(&firstPlayer, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
