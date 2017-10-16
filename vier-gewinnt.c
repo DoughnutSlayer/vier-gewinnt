@@ -101,8 +101,8 @@ void makePlayerTurn()
         result = put(playerKnot.gameboard, getNumberInput());
     }
     *(playerKnot.gameboard) = *result;
+    calculateHash(playerKnot.gameboard);
     free(result);
-    calculateHash(&playerKnot);
 }
 
 int main(int argc, char *argv[])
@@ -118,7 +118,10 @@ int main(int argc, char *argv[])
         struct gameboard emptyBoard = {0};
         emptyBoard.nextPlayer = 1;
         playerKnot.gameboard = &emptyBoard;
-        calculateHash(&playerKnot);
+        playerKnot.successors =
+          malloc(sizeof(*(playerKnot.successors)) * boardWidth);
+        playerKnot.successorsCount = 0;
+        calculateHash(playerKnot.gameboard);
 
         printPlayerPrompt();
         makePlayerTurn();
@@ -139,8 +142,8 @@ int main(int argc, char *argv[])
                 makePlayerTurn();
                 for (int i = 0; i < playerKnot.successorsCount; i++)
                 {
-                    if (!strcmp(playerKnot.gameboardHash,
-                                playerKnot.successors[i]->gameboardHash))
+                    if (!strcmp(playerKnot.gameboard->hash,
+                                playerKnot.successors[i]->gameboard->hash))
                     {
                         playerKnot = *(playerKnot.successors[i]);
                         break;

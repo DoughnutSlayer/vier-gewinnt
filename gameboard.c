@@ -1,8 +1,24 @@
 #include "gameboard.h"
+#include <stdio.h>
 #include <stdlib.h>
 
 const int boardWidth = BOARD_WIDTH;
 const int boardHeight = BOARD_HEIGHT;
+
+void calculateHash(struct gameboard *board)
+{
+    for (int lane = 0; lane < boardWidth; lane++)
+    {
+        for (int row = 0; row < boardHeight; row++)
+        {
+            char buffer[1];
+            sprintf(buffer, "%d", board->lanes[lane][row]);
+            int index = (lane * boardHeight) + row;
+            board->hash[index] = buffer[0];
+        }
+    }
+    board->hash[boardWidth * boardHeight] = '\0';
+}
 
 int updateSearchStatus(int *currentPlayer, int *foundPieces, int currentPiece,
                        struct gameboard *board)
