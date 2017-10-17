@@ -9,8 +9,8 @@ endif
 CC = mpicc
 
 CFLAGS = -Wall -std=c99 -DBOARD_WIDTH=$(BOARD_WIDTH) -DBOARD_HEIGHT=$(BOARD_HEIGHT)
-DEPS = createParallelTree.h gameboard.h knot.h
-OBJS = createParallelTree.o gameboard.o vier-gewinnt.o
+DEPS = createParallelTree.h gameboard.h testHelp.h knot.h
+OBJS = createParallelTree.o gameboard.o testHelp.o vier-gewinnt.o
 
 vier-gewinnt : $(OBJS)
 	$(CC) $(CFLAGS) -lm -o vier-gewinnt $(OBJS)
@@ -20,6 +20,9 @@ createParallelTree.o : createParallelTree.c $(DEPS)
 
 gameboard.o : gameboard.c $(DEPS)
 	$(CC) $(CFLAGS) -c gameboard.c
+
+testHelp.o : testHelp.c $(DEPS)
+	$(CC) $(CFLAGS) -c testHelp.c
 
 vier-gewinnt.o : vier-gewinnt.c $(DEPS)
 	$(CC) $(CFLAGS) -c vier-gewinnt.c
