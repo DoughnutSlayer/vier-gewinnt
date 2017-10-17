@@ -8,7 +8,7 @@ endif
 
 CC = mpicc
 
-CFLAGS = -Wall -std=c99 -DBOARD_WIDTH=$(BOARD_WIDTH) -DBOARD_HEIGHT=$(BOARD_HEIGHT)
+CFLAGS = -Wall -g -std=c99 -DBOARD_WIDTH=$(BOARD_WIDTH) -DBOARD_HEIGHT=$(BOARD_HEIGHT)
 DEPS = createParallelTree.h gameboard.h testHelp.h knot.h
 OBJS = createParallelTree.o gameboard.o testHelp.o vier-gewinnt.o
 
