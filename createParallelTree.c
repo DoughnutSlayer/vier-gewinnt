@@ -1,10 +1,12 @@
 #include <math.h>
 #include <mpi.h>
 #include <stddef.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "gameboard.h"
 #include "knot.h"
+#include "testHelp.h"
 
 extern const int boardWidth;
 
@@ -126,6 +128,7 @@ void prepareBoardSend(int *totalSendCount, struct gameboard *boardSendBuffer,
     }
 }
 
+/*
 void prepareWinpercentageArraySend(
   int turnIndex, double (*winpercentageArraySendBuffer)[BOARD_WIDTH],
   int *sendCnts, int *displacements)
@@ -155,6 +158,7 @@ void prepareWinpercentageArraySend(
         displacement += sendCnts[j];
     }
 }
+*/
 
 void calculateBoardSuccessors(
   int boardCount, struct gameboard *boards, int firstPredecessorIndex,
@@ -215,6 +219,7 @@ void addCurrentGameboardsTurn()
     }
 }
 
+/*
 void calculatePredecessorWinpercentages(
   int turnIndex, int winpercentageArrayCount,
   double (*winpercentageArrays)[BOARD_WIDTH], double *predecessorWinpercentages)
@@ -251,6 +256,7 @@ void calculatePredecessorWinpercentages(
         predecessorWinpercentages[j] = result;
     }
 }
+*/
 
 void fillNextGameboards(int totalRecvCount,
                         struct gameboard (*successorArrays)[BOARD_WIDTH])
@@ -350,6 +356,7 @@ void calculateTurns(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
     free(displacements);
 }
 
+/*
 void calculateWinpercentages(MPI_Datatype *winpercentageArrayType)
 {
     int recvCnt;
@@ -404,6 +411,7 @@ void calculateWinpercentages(MPI_Datatype *winpercentageArrayType)
     free(sendCnts);
     free(displacements);
 }
+*/
 
 void makeFirstTurn(struct knot *startKnot)
 {
@@ -439,5 +447,5 @@ void buildParallelTree(struct knot *startKnot, struct gameboard *startGameboard)
     MPI_Bcast(&firstPlayer, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
     calculateTurns(&MPI_GAMEBOARD, &MPI_GAMEBOARD_ARRAY);
-    calculateWinpercentages(&MPI_WINCHANCE_ARRAY);
+    // calculateWinpercentages(&MPI_WINCHANCE_ARRAY);
 }
