@@ -328,7 +328,8 @@ void calculateTurns(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
             treeFinished = 1;
             for (int i = 0; i < nextGameboardsCount; i++)
             {
-                if (!(nextGameboards[i]->isWonBy))
+                if (!(nextGameboards[i]->isWonBy)
+                    && nextGameboards[i]->nextPlayer)
                 {
                     treeFinished = 0;
                     break;
