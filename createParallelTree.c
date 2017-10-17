@@ -180,28 +180,32 @@ void addCurrentGameboardsTurn()
     turns[turnCounter - 1] = malloc(sizeof(*turns) * currentGameboardsCount);
     turnSizes[turnCounter - 1] = 0;
 
-    for (int i = 0; i < currentGameboardsCount; i++)
+    for (int i = 0; i < turnSizes[turnCounter - 2]; i++)
     {
-        struct knot *successor = malloc(sizeof(*successor));
-        successor->successors =
-          malloc(sizeof(*(successor->successors)) * boardWidth);
-        successor->successorsCount = 0;
-        successor->gameboard = currentGameboards[i];
-        if (successor->gameboard->isWonBy == 2)
+        struct knot *predecessor = turns[turnCounter - 2][i];
+        for (int j = 0; j < boardWidth; j++)
         {
-            successor->winPercentage = 100;
-        }
-        else
-        {
-            successor->winPercentage = 0;
-        }
-        turns[turnCounter - 1][i] = successor;
-        turnSizes[turnCounter - 1]++;
+            struct gameboard *successorGameboard =
+              currentGameboards[(boardWidth * i) + j];
+            if (successorGameboard->nextPlayer == 0)
+            {
+                predecessor->successorIndices[j] = -1;
+                continue;
+            }
 
-        struct knot *predecessor =
-          turns[turnCounter - 2][successor->gameboard->predecessorIndex];
-        predecessor->successors[predecessor->successorsCount] = successor;
-        predecessor->successorsCount++;
+            struct knot *successor = malloc(sizeof(*successor));
+            if (successorGameboard->isWonBy == 2)
+            {
+                successor->winPercentage = 100;
+            }
+            else
+            {
+                successor->winPercentage = 0;
+            }
+            predecessor->successorIndices[j] = turnSizes[turnCounter - 1];
+            turns[turnCounter - 1][turnSizes[turnCounter - 1]] = successor;
+            turnSizes[turnCounter - 1]++;
+        }
     }
 }
 
