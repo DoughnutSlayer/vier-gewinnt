@@ -147,7 +147,7 @@ void prepareWinpercentageArraySend(
         }
         if (successorsCount < boardWidth)
         {
-            winpercentageArraySendBuffer[j][successorsCount] = (double) -1;
+            winpercentageArraySendBuffer[j][successorsCount] = -1;
         }
     }
 
@@ -398,11 +398,11 @@ void calculateWinpercentages(MPI_Datatype *winpercentageArrayType)
 
         if (rank == 0)
         {
-            for (int j = 0; j < turnSizes[turnIndex]; j++)
+            for (int i = 0; i < turnSizes[turnIndex]; i++)
             {
-                if (resultRecvBuffer[j] >= 0)
+                if (resultRecvBuffer[i] >= 0)
                 {
-                    turns[turnIndex][j]->winPercentage = resultRecvBuffer[j];
+                    turns[turnIndex][i]->winPercentage = resultRecvBuffer[i];
                 }
             }
         }
