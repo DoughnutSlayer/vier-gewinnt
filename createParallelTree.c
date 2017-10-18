@@ -427,7 +427,9 @@ void makeFirstTurn(struct knot *startKnot)
     turnCounter++;
 }
 
-void buildParallelTree(struct knot *startKnot, struct gameboard *startGameboard)
+void buildParallelTree(
+  struct knot *startKnot, struct gameboard *startGameboard,
+  struct knot **((*turnsPointer)[BOARD_WIDTH * BOARD_HEIGHT]))
 {
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &worldSize);
@@ -447,4 +449,6 @@ void buildParallelTree(struct knot *startKnot, struct gameboard *startGameboard)
 
     calculateTurns(&MPI_GAMEBOARD, &MPI_GAMEBOARD_ARRAY);
     calculateWinpercentages(&MPI_WINCHANCE_ARRAY);
+
+    memcpy((void *) turnsPointer, (void *) &turns, sizeof(turns));
 }

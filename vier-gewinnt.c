@@ -13,6 +13,8 @@ char invalidInputMessage[42];
 struct knot *playerKnot;
 struct gameboard *playerGameboard;
 
+int turnIndex = -1; // TODO: Give turnIndex to createParallelTree;
+
 void printPlayerGameboard()
 {
     printf(" ");
@@ -91,19 +93,23 @@ int getNumberInput()
     return input;
 }
 
-void makePlayerTurn()
+int makePlayerTurn()
 {
-    struct gameboard *result = NULL;
-    result = put(playerGameboard, getNumberInput());
-    while (!result)
+    struct gameboard *newGameboard = NULL;
+    int input = getNumberInput();
+    newGameboard = put(playerGameboard, input);
+    while (!newGameboard)
     {
         printf("%s", invalidInputMessage);
         fflush(NULL);
-        result = put(playerGameboard, getNumberInput());
+        input = getNumberInput();
+        newGameboard = put(playerGameboard, input);
     }
-    *playerGameboard = *result;
+    *playerGameboard = *newGameboard;
     calculateHash(playerGameboard);
-    free(result);
+    free(newGameboard);
+    turnIndex++;
+    return input;
 }
 
 int main(int argc, char *argv[])
@@ -121,6 +127,9 @@ int main(int argc, char *argv[])
         return 0;
     }
 
+    struct knot **(turns[BOARD_WIDTH * BOARD_HEIGHT]);
+    struct gameboard *playerGameboardCopy =
+      malloc(sizeof(*playerGameboardCopy));
     if (rank == 0)
     {
         sprintf(invalidInputMessage, "Please enter a number between 0 and %d: ",
@@ -139,60 +148,70 @@ int main(int argc, char *argv[])
         makePlayerTurn();
         printPlayerGameboard();
         printf("Calculating...\n");
+
+        *playerGameboardCopy = *playerGameboard;
     }
 
-    buildParallelTree(playerKnot, playerGameboard);
+    buildParallelTree(playerKnot, playerGameboard, &turns);
 
-    /*if (rank == 0)
+    if (rank == 0)
     {
         printf("Resume\n");
-        while (!playerKnot.gameboard->isWonBy)
+
+        playerGameboard = playerGameboardCopy;
+        while (!playerGameboard->isWonBy)
         {
-            if (playerKnot.gameboard->nextPlayer == 1)
+            if (playerGameboard->nextPlayer == 1)
             {
                 printPlayerPrompt();
-                makePlayerTurn();
-                for (int i = 0; i < playerKnot.successorsCount; i++)
-                {
-                    if (!strcmp(playerKnot.gameboard->hash,
-                                playerKnot.successors[i]->gameboard->hash))
-                    {
-                        playerKnot = *(playerKnot.successors[i]);
-                        break;
-                    }
-                }
+                int input = makePlayerTurn();
+                int nextKnotIndex = playerKnot->successorIndices[input];
+                playerKnot = turns[turnIndex][nextKnotIndex];
             }
             else
             {
                 printPlayerGameboard();
-                int bestSuccessorIndex = 0;
-                // printf("Player Successors: %d\n",
-                // playerKnot.successorsCount);
-                for (int i = 1; i < playerKnot.successorsCount; i++)
+                int bestTurn = 0;
+                double bestWinpercentage = 0;
+                for (int i = 0; i < boardWidth; i++)
                 {
-                    if (playerKnot.successors[bestSuccessorIndex]->winPercentage
-                        < playerKnot.successors[i]->winPercentage)
+                    int successorIndex = playerKnot->successorIndices[i];
+                    if (successorIndex < 0)
                     {
-                        bestSuccessorIndex = i;
+                        continue;
+                    }
+
+                    double successorWinPercentage =
+                      turns[turnIndex + 1][successorIndex]->winPercentage;
+                    if (bestWinpercentage <= successorWinPercentage)
+                    {
+                        bestTurn = i;
+                        bestWinpercentage = successorWinPercentage;
                     }
                 }
-                playerKnot = *(playerKnot.successors[bestSuccessorIndex]);
+                playerKnot =
+                  turns[turnIndex + 1][playerKnot->successorIndices[bestTurn]];
+                struct gameboard *newGameboard;
+                newGameboard = put(playerGameboard, bestTurn);
+                *playerGameboard = *newGameboard;
+                free(newGameboard);
+                turnIndex++;
             }
         }
         printPlayerGameboard();
-        if (playerKnot.gameboard->isWonBy == 1)
+        if (playerGameboard->isWonBy == 1)
         {
             printf("You Win!\n");
         }
-        else if (playerKnot.gameboard->isWonBy == 2)
+        else if (playerGameboard->isWonBy == 2)
         {
             printf("You Lose!\n");
         }
-        else if (playerKnot.gameboard->isWonBy == 2)
+        else if (playerGameboard->isWonBy == 3)
         {
             printf("It's a draw!\n");
         }
-    }*/
+    }
 
     MPI_Finalize();
     return 0;
