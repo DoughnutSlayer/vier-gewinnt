@@ -6,8 +6,6 @@
 #include "knot.h"
 #include "mpi.h"
 
-extern const int boardWidth, boardHeight;
-
 char invalidInputMessage[42];
 
 struct knot *playerKnot;

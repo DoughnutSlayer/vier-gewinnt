@@ -6,8 +6,6 @@
 #include "gameboard.h"
 #include "knot.h"
 
-extern const int boardWidth;
-
 int rank;
 int worldSize;
 int firstPlayer;
