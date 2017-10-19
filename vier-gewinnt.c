@@ -1,3 +1,4 @@
+#include "vier-gewinnt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -5,6 +6,8 @@
 #include "gameboard.h"
 #include "knot.h"
 #include "mpi.h"
+
+char saveFileName[8];
 
 char invalidInputMessage[42];
 
@@ -123,6 +126,8 @@ int main(int argc, char *argv[])
         MPI_Finalize();
         return 0;
     }
+
+    sprintf(saveFileName, ".%dx%d", boardWidth, boardHeight);
 
     struct knot **(turns[(BOARD_WIDTH * BOARD_HEIGHT) + 1]);
     struct gameboard *playerGameboardCopy =
