@@ -65,7 +65,7 @@ void deleteCurrentGameboards()
     free(currentGameboards);
 }
 
-void refreshQueues()
+void refreshGameboardQueues()
 {
     deleteCurrentGameboards();
     currentGameboards = nextGameboards;
@@ -354,8 +354,8 @@ void calculateTurns(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
                     break;
                 }
             }
-            refreshQueues();
             turnCounter++;
+            refreshGameboardQueues();
             if (treeFinished)
             {
                 addCurrentGameboardsTurn();
@@ -436,7 +436,7 @@ void makeFirstTurn(struct knot *startKnot)
     calculateBoardSuccessors(1, currentGameboards[0], 0, resultBuffer);
     fillNextGameboards(1, resultBuffer);
     free(resultBuffer);
-    refreshQueues();
+    refreshGameboardQueues();
     turnCounter++;
 }
 
