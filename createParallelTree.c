@@ -426,9 +426,10 @@ void calculateWinpercentages(MPI_Datatype *winpercentageArrayType)
 
 void makeFirstTurn(struct knot *startKnot)
 {
-    turns[turnCounter] = malloc(sizeof(&startKnot));
-    turns[turnCounter][0] = startKnot;
+    successorKnots = malloc(sizeof(&startKnot));
+    successorKnots[0] = startKnot;
     turnSizes[turnCounter] = 1;
+    setTurnDisplacement(turnCounter - 1);
 
     struct gameboard(*resultBuffer)[BOARD_WIDTH] =
       malloc(sizeof(*resultBuffer));
