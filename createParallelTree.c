@@ -218,12 +218,13 @@ void calculateBoardSuccessors(
 
 void addCurrentGameboardsTurn()
 {
-    turns[turnCounter] = malloc(sizeof(*turns) * currentGameboardsCount);
+    predecessorKnots = successorKnots;
+    successorKnots = malloc(sizeof(*successorKnots) * currentGameboardsCount);
     turnSizes[turnCounter] = 0;
 
     for (int i = 0; i < turnSizes[turnCounter - 1]; i++)
     {
-        struct knot *predecessor = turns[turnCounter - 1][i];
+        struct knot *predecessor = predecessorKnots[i];
         for (int j = 0; j < boardWidth; j++)
         {
             struct gameboard *successorGameboard =
@@ -244,10 +245,11 @@ void addCurrentGameboardsTurn()
                 successor->winPercentage = 0;
             }
             predecessor->successorIndices[j] = turnSizes[turnCounter];
-            turns[turnCounter][turnSizes[turnCounter]] = successor;
+            successorKnots[turnSizes[turnCounter]] = successor;
             turnSizes[turnCounter]++;
         }
     }
+    refreshKnotQueues();
 }
 
 void calculatePredecessorWinpercentages(
