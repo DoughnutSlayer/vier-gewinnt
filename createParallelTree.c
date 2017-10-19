@@ -12,7 +12,7 @@ int rank;
 int worldSize;
 int firstPlayer;
 
-struct knot **(turns[BOARD_WIDTH * BOARD_HEIGHT]);
+struct knot **(turns[(BOARD_WIDTH * BOARD_HEIGHT + 1)]);
 
 int turnSizes[BOARD_WIDTH * BOARD_HEIGHT];
 int turnCounter = 0;
@@ -188,12 +188,12 @@ void calculateBoardSuccessors(
 
 void addCurrentGameboardsTurn()
 {
-    turns[turnCounter - 1] = malloc(sizeof(*turns) * currentGameboardsCount);
-    turnSizes[turnCounter - 1] = 0;
+    turns[turnCounter] = malloc(sizeof(*turns) * currentGameboardsCount);
+    turnSizes[turnCounter] = 0;
 
-    for (int i = 0; i < turnSizes[turnCounter - 2]; i++)
+    for (int i = 0; i < turnSizes[turnCounter - 1]; i++)
     {
-        struct knot *predecessor = turns[turnCounter - 2][i];
+        struct knot *predecessor = turns[turnCounter - 1][i];
         for (int j = 0; j < boardWidth; j++)
         {
             struct gameboard *successorGameboard =
@@ -213,9 +213,9 @@ void addCurrentGameboardsTurn()
             {
                 successor->winPercentage = 0;
             }
-            predecessor->successorIndices[j] = turnSizes[turnCounter - 1];
-            turns[turnCounter - 1][turnSizes[turnCounter - 1]] = successor;
-            turnSizes[turnCounter - 1]++;
+            predecessor->successorIndices[j] = turnSizes[turnCounter];
+            turns[turnCounter][turnSizes[turnCounter]] = successor;
+            turnSizes[turnCounter]++;
         }
     }
 }
@@ -364,7 +364,7 @@ void calculateWinpercentages(MPI_Datatype *winpercentageArrayType)
     double(*taskRecvBuffer)[BOARD_WIDTH];
     double *resultSendBuffer;
     double *resultRecvBuffer;
-    turnCounter = turnCounter - 2;
+    turnCounter = turnCounter - 1;
     MPI_Bcast(&turnCounter, 1, MPI_INT, 0, MPI_COMM_WORLD);
     for (int turnIndex = turnCounter; turnIndex >= 0; turnIndex--)
     {
@@ -412,9 +412,9 @@ void calculateWinpercentages(MPI_Datatype *winpercentageArrayType)
 
 void makeFirstTurn(struct knot *startKnot)
 {
-    turns[turnCounter - 1] = malloc(sizeof(&startKnot));
-    turns[turnCounter - 1][0] = startKnot;
-    turnSizes[turnCounter - 1] = 1;
+    turns[turnCounter] = malloc(sizeof(&startKnot));
+    turns[turnCounter][0] = startKnot;
+    turnSizes[turnCounter] = 1;
 
     struct gameboard(*resultBuffer)[BOARD_WIDTH] =
       malloc(sizeof(*resultBuffer));

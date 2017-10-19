@@ -13,7 +13,7 @@ char invalidInputMessage[42];
 struct knot *playerKnot;
 struct gameboard *playerGameboard;
 
-int turnIndex = -1; // TODO: Give turnIndex to createParallelTree;
+int turnIndex = 0; // TODO: Give turnIndex to createParallelTree;
 
 void printPlayerGameboard()
 {
@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    struct knot **(turns[BOARD_WIDTH * BOARD_HEIGHT]);
+    struct knot **(turns[(BOARD_WIDTH * BOARD_HEIGHT) + 1]);
     struct gameboard *playerGameboardCopy =
       malloc(sizeof(*playerGameboardCopy));
     if (rank == 0)
