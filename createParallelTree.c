@@ -75,6 +75,22 @@ void refreshGameboardQueues()
     nextGameboardsCount = 0;
 }
 
+void deletePredecessorKnots()
+{
+    for (int i = 0; i < turnSizes[turnCounter - 1]; i++)
+    {
+        free(predecessorKnots[i]);
+    }
+    free(predecessorKnots);
+}
+
+void refreshKnotQueues()
+{
+    deletePredecessorKnots();
+    predecessorKnots = successorKnots;
+    turnCounter++;
+}
+
 void initializeQueues(struct gameboard *startGameboard)
 {
     currentGameboards = malloc(sizeof(startGameboard));
