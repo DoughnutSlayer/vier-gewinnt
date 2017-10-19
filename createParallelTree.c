@@ -11,9 +11,11 @@ int rank;
 int worldSize;
 int firstPlayer;
 
-struct knot **(turns[(BOARD_WIDTH * BOARD_HEIGHT + 1)]);
+struct knot **predecessorKnots;
+struct knot **successorKnots;
 
-int turnSizes[BOARD_WIDTH * BOARD_HEIGHT];
+int turnSizes[(BOARD_WIDTH * BOARD_HEIGHT) + 1] = {0};
+int turnDisplacements[(BOARD_WIDTH * BOARD_HEIGHT) + 1] = {0};
 int turnCounter = 0;
 
 // Queue 1 for current knots
@@ -38,6 +40,19 @@ void setStartTurn(struct gameboard *startGameboard)
                 turnCounter++;
             }
         }
+    }
+}
+
+void setTurnDisplacement(int turnIndex)
+{
+    if (turnIndex == 0)
+    {
+        turnDisplacements[0] = 0;
+    }
+    else
+    {
+        turnDisplacements[turnIndex] =
+          turnDisplacements[turnIndex - 1] + turnSizes[turnIndex - 1];
     }
 }
 
