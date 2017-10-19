@@ -222,6 +222,8 @@ void addCurrentGameboardsTurn()
     successorKnots = malloc(sizeof(*successorKnots) * currentGameboardsCount);
     turnSizes[turnCounter] = 0;
 
+    FILE *knotsFile = fopen(saveFileName, "ab");
+
     for (int i = 0; i < turnSizes[turnCounter - 1]; i++)
     {
         struct knot *predecessor = predecessorKnots[i];
@@ -248,7 +250,9 @@ void addCurrentGameboardsTurn()
             successorKnots[turnSizes[turnCounter]] = successor;
             turnSizes[turnCounter]++;
         }
+        fwrite(predecessor, sizeof(*predecessor), 1, knotsFile);
     }
+    fclose(knotsFile);
     refreshKnotQueues();
 }
 
