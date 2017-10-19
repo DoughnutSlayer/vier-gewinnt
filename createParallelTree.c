@@ -30,14 +30,15 @@ int nextGameboardsCount;
 
 void setStartTurn(struct gameboard *startGameboard)
 {
-    int index = 0;
-    while (startGameboard->hash[index] != '\0')
+    for (int i = 0; i < boardWidth; i++)
     {
-        if (startGameboard->hash[index] != '0')
+        for (int j = 0; j < boardHeight; j++)
         {
-            turnCounter++;
+            if (startGameboard->lanes[i][j] > 0)
+            {
+                turnCounter++;
+            }
         }
-        index++;
     }
 }
 
@@ -73,19 +74,17 @@ void initializeQueues(struct gameboard *startGameboard)
 void defineMPIDatatypes(MPI_Datatype *boardType, MPI_Datatype *boardArrayType,
                         MPI_Datatype *winChanceArrayType)
 {
-    int boardBlocklengths[5] = {
+    int boardBlocklengths[4] = {
       sizeof(((struct gameboard *) 0)->predecessorIndex) / sizeof(int),
       sizeof(((struct gameboard *) 0)->lanes) / sizeof(int),
-      sizeof(((struct gameboard *) 0)->hash) / sizeof(char),
       sizeof(((struct gameboard *) 0)->isWonBy) / sizeof(int),
       sizeof(((struct gameboard *) 0)->nextPlayer) / sizeof(int)};
-    MPI_Aint boardDisplacements[5] = {
+    MPI_Aint boardDisplacements[4] = {
       offsetof(struct gameboard, predecessorIndex),
-      offsetof(struct gameboard, lanes), offsetof(struct gameboard, hash),
-      offsetof(struct gameboard, isWonBy),
+      offsetof(struct gameboard, lanes), offsetof(struct gameboard, isWonBy),
       offsetof(struct gameboard, nextPlayer)};
-    MPI_Datatype boardTypes[5] = {MPI_INT, MPI_INT, MPI_CHAR, MPI_INT, MPI_INT};
-    MPI_Type_create_struct(5, boardBlocklengths, boardDisplacements, boardTypes,
+    MPI_Datatype boardTypes[4] = {MPI_INT, MPI_INT, MPI_INT, MPI_INT};
+    MPI_Type_create_struct(4, boardBlocklengths, boardDisplacements, boardTypes,
                            boardType);
     MPI_Type_commit(boardType);
 
@@ -176,7 +175,6 @@ void calculateBoardSuccessors(
             if (createdBoard)
             {
                 createdBoard->predecessorIndex = firstPredecessorIndex + i;
-                calculateHash(createdBoard);
                 boardSuccessorArrays[i][j] = *createdBoard;
             }
             else

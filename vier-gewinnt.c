@@ -106,7 +106,6 @@ int makePlayerTurn()
         newGameboard = put(playerGameboard, input);
     }
     *playerGameboard = *newGameboard;
-    calculateHash(playerGameboard);
     free(newGameboard);
     turnIndex++;
     return input;
@@ -142,7 +141,6 @@ int main(int argc, char *argv[])
         struct gameboard initialGameboard = {.nextPlayer = 1};
         playerGameboard = malloc(sizeof(*playerGameboard));
         *playerGameboard = initialGameboard;
-        calculateHash(playerGameboard);
 
         printPlayerPrompt();
         makePlayerTurn();
