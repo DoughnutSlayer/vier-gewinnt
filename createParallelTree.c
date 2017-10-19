@@ -5,6 +5,7 @@
 #include <string.h>
 #include "gameboard.h"
 #include "knot.h"
+#include "vier-gewinnt.h"
 
 int rank;
 int worldSize;
@@ -440,6 +441,9 @@ void buildParallelTree(
         firstPlayer = (startGameboard->nextPlayer - turnCounter % 2);
         initializeQueues(startGameboard);
         makeFirstTurn(startKnot);
+
+        FILE *knotsFile = fopen(saveFileName, "wb");
+        fclose(knotsFile);
     }
     MPI_Bcast(&firstPlayer, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
