@@ -37,6 +37,7 @@ void setStartTurn(struct gameboard *startGameboard)
         {
             if (startGameboard->lanes[i][j] > 0)
             {
+                turnSizes[turnCounter] = 0;
                 turnCounter++;
             }
         }
