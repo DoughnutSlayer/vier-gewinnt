@@ -159,7 +159,7 @@ void prepareWinpercentageArraySend(
 {
     for (int j = 0; j < turnSizes[turnIndex]; j++)
     {
-        struct knot *predecessor = turns[turnIndex][j];
+        struct knot *predecessor = &(predecessorKnots[j]);
         int successorsCount = 0;
         for (int k = 0; k < boardWidth; k++)
         {
@@ -169,7 +169,7 @@ void prepareWinpercentageArraySend(
                 continue;
             }
             winpercentageArraySendBuffer[j][successorsCount] =
-              turns[turnIndex + 1][successorIndex]->winPercentage;
+              successorKnots[successorIndex].winPercentage;
             successorsCount++;
         }
         if (successorsCount < boardWidth)
