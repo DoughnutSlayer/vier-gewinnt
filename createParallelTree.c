@@ -412,6 +412,33 @@ void calculateTurns(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
     free(displacements);
 }
 
+void loadKnotQueues(int turnIndex)
+{
+    FILE *saveFile = fopen(saveFileName, "rb");
+
+    if (predecessorKnots)
+    {
+        successorKnots = predecessorKnots;
+    }
+    else
+    {
+        successorKnots =
+          malloc(sizeof(*successorKnots) * turnSizes[turnIndex + 1]);
+        fseek(saveFile,
+              sizeof(*successorKnots) * turnDisplacements[turnIndex + 1],
+              SEEK_SET);
+        fread(successorKnots, sizeof(*successorKnots), turnSizes[turnIndex + 1],
+              saveFile);
+    }
+    predecessorKnots = malloc(sizeof(*predecessorKnots) * turnSizes[turnIndex]);
+
+    fseek(saveFile, sizeof(*predecessorKnots) * turnDisplacements[turnIndex],
+          SEEK_SET);
+    fread(predecessorKnots, sizeof(*predecessorKnots), turnSizes[turnIndex],
+          saveFile);
+    fclose(saveFile);
+}
+
 void calculateWinpercentages(MPI_Datatype *winpercentageArrayType)
 {
     int recvCnt;
@@ -428,6 +455,7 @@ void calculateWinpercentages(MPI_Datatype *winpercentageArrayType)
         taskSendBuffer = malloc(sizeof(*taskSendBuffer) * turnSizes[turnIndex]);
         if (rank == 0)
         {
+            loadKnotQueues(turnIndex);
             prepareWinpercentageArraySend(turnIndex, taskSendBuffer, sendCnts,
                                           displacements);
         }
