@@ -57,6 +57,12 @@ void setTurnDisplacement(int turnIndex)
     }
 }
 
+void setTurnSize(int turnIndex, int turnSize)
+{
+    turnSizes[turnIndex] = turnSize;
+    setTurnDisplacement(turnIndex);
+}
+
 void deleteCurrentGameboards()
 {
     for (int i = 0; i < currentGameboardsCount; i++)
@@ -210,9 +216,9 @@ void calculateBoardSuccessors(
 
 void addCurrentGameboardsTurn()
 {
-    turnSizes[turnCounter] = 0;
 
     FILE *knotsFile = fopen(saveFileName, "ab");
+    int currentTurnSize = 0;
 
     for (int i = 0; i < turnSizes[turnCounter - 1]; i++)
     {
@@ -227,7 +233,7 @@ void addCurrentGameboardsTurn()
                 continue;
             }
 
-            struct knot *successor = &(successorKnots[turnSizes[turnCounter]]);
+            struct knot *successor = &(successorKnots[currentTurnSize]);
             if (successorGameboard->isWonBy == 2)
             {
                 successor->winPercentage = 100;
@@ -236,10 +242,12 @@ void addCurrentGameboardsTurn()
             {
                 successor->winPercentage = 0;
             }
-            predecessor->successorIndices[j] = turnSizes[turnCounter];
-            turnSizes[turnCounter]++;
+            predecessor->successorIndices[j] = currentTurnSize;
+            currentTurnSize++;
         }
     }
+    setTurnSize(turnCounter, currentTurnSize);
+
     fwrite(predecessorKnots, sizeof(*predecessorKnots),
            turnSizes[turnCounter - 1], knotsFile);
     fclose(knotsFile);
@@ -301,7 +309,6 @@ void nextTurn()
 {
     refreshGameboardQueues();
     refreshKnotQueues();
-    setTurnDisplacement(turnCounter);
     turnCounter++;
 }
 
@@ -449,8 +456,7 @@ void makeFirstTurn(struct knot *startKnot)
 {
     successorKnots = malloc(sizeof(*startKnot));
     successorKnots[0] = *startKnot;
-    turnSizes[turnCounter] = 1;
-    setTurnDisplacement(turnCounter - 1);
+    setTurnSize(turnCounter, 1);
 
     struct gameboard(*resultBuffer)[BOARD_WIDTH] =
       malloc(sizeof(*resultBuffer));
