@@ -89,7 +89,6 @@ void refreshKnotQueues()
 {
     deletePredecessorKnots();
     predecessorKnots = successorKnots;
-    turnCounter++;
 }
 
 void initializeQueues(struct gameboard *startGameboard)
@@ -377,8 +376,8 @@ void calculateTurns(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
                     break;
                 }
             }
-            turnCounter++;
             refreshGameboardQueues();
+            turnCounter++;
             if (treeFinished)
             {
                 addCurrentGameboardsTurn();
