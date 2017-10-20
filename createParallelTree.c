@@ -311,6 +311,21 @@ void nextTurn()
     turnCounter++;
 }
 
+void saveLastTurn()
+{
+    for (int i = 0; i < turnSizes[turnCounter]; i++)
+    {
+        for (int j = 0; j < boardWidth; j++)
+        {
+            successorKnots[i].successorIndices[j] = -1;
+        }
+    }
+    FILE *saveFile = fopen(saveFileName, "ab");
+    fwrite(successorKnots, sizeof(*successorKnots), turnSizes[turnCounter],
+           saveFile);
+    fclose(saveFile);
+}
+
 void calculateTurns(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
 {
     int treeFinished = 0;
@@ -383,9 +398,12 @@ void calculateTurns(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
             if (treeFinished)
             {
                 addCurrentGameboardsTurn();
+                saveLastTurn();
+
                 free(nextGameboards);
                 nextGameboards = NULL;
                 free(predecessorKnots);
+                predecessorKnots = NULL;
             }
         }
         MPI_Bcast(&treeFinished, 1, MPI_INT, 0, MPI_COMM_WORLD);
