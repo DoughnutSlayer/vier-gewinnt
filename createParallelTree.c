@@ -216,8 +216,6 @@ void calculateBoardSuccessors(
 
 void addCurrentGameboardsTurn()
 {
-
-    FILE *knotsFile = fopen(saveFileName, "ab");
     int currentTurnSize = 0;
 
     for (int i = 0; i < turnSizes[turnCounter - 1]; i++)
@@ -248,6 +246,7 @@ void addCurrentGameboardsTurn()
     }
     setTurnSize(turnCounter, currentTurnSize);
 
+    FILE *knotsFile = fopen(saveFileName, "ab");
     fwrite(predecessorKnots, sizeof(*predecessorKnots),
            turnSizes[turnCounter - 1], knotsFile);
     fclose(knotsFile);
