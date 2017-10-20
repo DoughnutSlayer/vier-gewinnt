@@ -306,6 +306,14 @@ void fillNextGameboards(int totalRecvCount,
     }
 }
 
+void nextTurn()
+{
+    refreshGameboardQueues();
+    refreshKnotQueues();
+    setTurnDisplacement(turnCounter);
+    turnCounter++;
+}
+
 void calculateTurns(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
 {
     int treeFinished = 0;
@@ -374,9 +382,7 @@ void calculateTurns(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
                     break;
                 }
             }
-            refreshGameboardQueues();
-            refreshKnotQueues();
-            turnCounter++;
+            nextTurn();
             if (treeFinished)
             {
                 addCurrentGameboardsTurn();
@@ -458,9 +464,7 @@ void makeFirstTurn(struct knot *startKnot)
     calculateBoardSuccessors(1, currentGameboards[0], 0, resultBuffer);
     fillNextGameboards(1, resultBuffer);
     free(resultBuffer);
-    refreshGameboardQueues();
-    refreshKnotQueues();
-    turnCounter++;
+    nextTurn();
 }
 
 void buildParallelTree(
