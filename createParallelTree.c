@@ -252,7 +252,6 @@ void addCurrentGameboardsTurn()
         fwrite(predecessor, sizeof(*predecessor), 1, knotsFile);
     }
     fclose(knotsFile);
-    refreshKnotQueues();
 }
 
 void calculatePredecessorWinpercentages(
@@ -376,6 +375,7 @@ void calculateTurns(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
                 }
             }
             refreshGameboardQueues();
+            refreshKnotQueues();
             turnCounter++;
             if (treeFinished)
             {
@@ -458,6 +458,7 @@ void makeFirstTurn(struct knot *startKnot)
     fillNextGameboards(1, resultBuffer);
     free(resultBuffer);
     refreshGameboardQueues();
+    refreshKnotQueues();
     turnCounter++;
 }
 
