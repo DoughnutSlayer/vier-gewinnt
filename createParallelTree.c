@@ -11,8 +11,8 @@ int rank;
 int worldSize;
 int firstPlayer;
 
-struct knot **predecessorKnots;
-struct knot **successorKnots;
+struct knot *predecessorKnots;
+struct knot *successorKnots;
 
 int turnSizes[(BOARD_WIDTH * BOARD_HEIGHT) + 1] = {0};
 int turnDisplacements[(BOARD_WIDTH * BOARD_HEIGHT) + 1] = {0};
@@ -76,18 +76,9 @@ void refreshGameboardQueues()
     nextGameboardsCount = 0;
 }
 
-void deletePredecessorKnots()
-{
-    for (int i = 0; i < turnSizes[turnCounter - 1]; i++)
-    {
-        free(predecessorKnots[i]);
-    }
-    free(predecessorKnots);
-}
-
 void refreshKnotQueues()
 {
-    deletePredecessorKnots();
+    free(predecessorKnots);
     predecessorKnots = successorKnots;
     successorKnots = malloc(sizeof(*successorKnots) * currentGameboardsCount);
 }
@@ -225,7 +216,7 @@ void addCurrentGameboardsTurn()
 
     for (int i = 0; i < turnSizes[turnCounter - 1]; i++)
     {
-        struct knot *predecessor = predecessorKnots[i];
+        struct knot *predecessor = &(predecessorKnots[i]);
         for (int j = 0; j < boardWidth; j++)
         {
             struct gameboard *successorGameboard =
@@ -236,7 +227,7 @@ void addCurrentGameboardsTurn()
                 continue;
             }
 
-            struct knot *successor = malloc(sizeof(*successor));
+            struct knot *successor = &(successorKnots[turnSizes[turnCounter]]);
             if (successorGameboard->isWonBy == 2)
             {
                 successor->winPercentage = 100;
@@ -246,11 +237,11 @@ void addCurrentGameboardsTurn()
                 successor->winPercentage = 0;
             }
             predecessor->successorIndices[j] = turnSizes[turnCounter];
-            successorKnots[turnSizes[turnCounter]] = successor;
             turnSizes[turnCounter]++;
         }
-        fwrite(predecessor, sizeof(*predecessor), 1, knotsFile);
     }
+    fwrite(predecessorKnots, sizeof(*predecessorKnots),
+           turnSizes[turnCounter - 1], knotsFile);
     fclose(knotsFile);
 }
 
@@ -388,8 +379,10 @@ void calculateTurns(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
                 addCurrentGameboardsTurn();
                 free(nextGameboards);
                 nextGameboards = NULL;
-                deletePredecessorKnots();
+                free(predecessorKnots);
             }
+            printf("Size: %d\n", turnSizes[turnCounter - 1]);
+            printf("Displacement: %d\n", turnDisplacements[turnCounter - 1]);
         }
         MPI_Bcast(&treeFinished, 1, MPI_INT, 0, MPI_COMM_WORLD);
     }
@@ -454,8 +447,8 @@ void calculateWinpercentages(MPI_Datatype *winpercentageArrayType)
 
 void makeFirstTurn(struct knot *startKnot)
 {
-    successorKnots = malloc(sizeof(&startKnot));
-    successorKnots[0] = startKnot;
+    successorKnots = malloc(sizeof(*startKnot));
+    successorKnots[0] = *startKnot;
     turnSizes[turnCounter] = 1;
     setTurnDisplacement(turnCounter - 1);
 
