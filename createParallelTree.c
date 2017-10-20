@@ -382,6 +382,7 @@ void calculateTurns(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
                 addCurrentGameboardsTurn();
                 free(nextGameboards);
                 nextGameboards = NULL;
+                deletePredecessorKnots();
             }
         }
         MPI_Bcast(&treeFinished, 1, MPI_INT, 0, MPI_COMM_WORLD);
