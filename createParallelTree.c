@@ -89,6 +89,7 @@ void refreshKnotQueues()
 {
     deletePredecessorKnots();
     predecessorKnots = successorKnots;
+    successorKnots = malloc(sizeof(*successorKnots) * currentGameboardsCount);
 }
 
 void initializeQueues(struct gameboard *startGameboard)
@@ -218,8 +219,6 @@ void calculateBoardSuccessors(
 
 void addCurrentGameboardsTurn()
 {
-    predecessorKnots = successorKnots;
-    successorKnots = malloc(sizeof(*successorKnots) * currentGameboardsCount);
     turnSizes[turnCounter] = 0;
 
     FILE *knotsFile = fopen(saveFileName, "ab");
