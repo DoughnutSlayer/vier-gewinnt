@@ -388,8 +388,6 @@ void calculateTurns(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
                 nextGameboards = NULL;
                 free(predecessorKnots);
             }
-            printf("Size: %d\n", turnSizes[turnCounter - 1]);
-            printf("Displacement: %d\n", turnDisplacements[turnCounter - 1]);
         }
         MPI_Bcast(&treeFinished, 1, MPI_INT, 0, MPI_COMM_WORLD);
     }
