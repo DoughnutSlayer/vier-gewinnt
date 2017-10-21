@@ -485,7 +485,7 @@ void calculateWinpercentages(MPI_Datatype *winpercentageArrayType)
             {
                 if (resultRecvBuffer[i] >= 0)
                 {
-                    turns[turnIndex][i]->winPercentage = resultRecvBuffer[i];
+                    predecessorKnots[i].winPercentage = resultRecvBuffer[i];
                 }
             }
         }
