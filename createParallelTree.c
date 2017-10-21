@@ -488,6 +488,14 @@ void calculateWinpercentages(MPI_Datatype *winpercentageArrayType)
                     predecessorKnots[i].winPercentage = resultRecvBuffer[i];
                 }
             }
+
+            FILE *saveFile = fopen(saveFileName, "r+b");
+            fseek(saveFile,
+                  turnDisplacements[turnIndex] * sizeof(*predecessorKnots),
+                  SEEK_SET);
+            fwrite(predecessorKnots, sizeof(*predecessorKnots),
+                   turnSizes[turnIndex], saveFile);
+            fclose(saveFile);
         }
         free(resultRecvBuffer);
     }
