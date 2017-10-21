@@ -273,15 +273,15 @@ void calculatePredecessorWinpercentages(
             }
             if (turnIndex % 2 == firstPlayer % 2)
             {
-                result += winpercentageArrays[j][k];
-                resultCount++;
+                result = fmax(result, winpercentageArrays[j][k]);
             }
             else
             {
-                result = fmax(result, winpercentageArrays[j][k]);
+                result += winpercentageArrays[j][k];
+                resultCount++;
             }
         }
-        if (turnIndex % 2 == firstPlayer % 2)
+        if (!(turnIndex % 2 == firstPlayer % 2))
         {
             result = result / resultCount;
         }
