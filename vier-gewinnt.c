@@ -138,7 +138,6 @@ int main(int argc, char *argv[])
 
     sprintf(saveFileName, ".%dx%d", boardWidth, boardHeight);
 
-    struct knot **(turns[(BOARD_WIDTH * BOARD_HEIGHT) + 1]);
     struct gameboard *playerGameboardCopy =
       malloc(sizeof(*playerGameboardCopy));
     if (rank == 0)
@@ -162,7 +161,7 @@ int main(int argc, char *argv[])
         *playerGameboardCopy = *playerGameboard;
     }
 
-    buildParallelTree(playerKnot, playerGameboard, &turns);
+    buildParallelTree(playerKnot, playerGameboard);
 
     if (rank == 0)
     {
