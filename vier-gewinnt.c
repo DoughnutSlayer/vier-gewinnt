@@ -177,7 +177,13 @@ int main(int argc, char *argv[])
                 printPlayerPrompt();
                 int input = makePlayerTurn();
                 int nextKnotIndex = playerKnot->successorIndices[input];
-                playerKnot = turns[turnIndex][nextKnotIndex];
+
+                FILE *saveFile = fopen(saveFileName, "rb");
+                fseek(saveFile, (turnDisplacements[turnIndex] + nextKnotIndex)
+                                  * sizeof(*playerKnot),
+                      SEEK_SET);
+                fread(playerKnot, sizeof(*playerKnot), 1, saveFile);
+                fclose(saveFile);
             }
             else
             {
@@ -192,16 +198,32 @@ int main(int argc, char *argv[])
                         continue;
                     }
 
-                    double successorWinPercentage =
-                      turns[turnIndex + 1][successorIndex]->winPercentage;
+                    double successorWinPercentage = 0;
+                    FILE *saveFile = fopen(saveFileName, "rb");
+                    fseek(saveFile,
+                          ((turnDisplacements[turnIndex + 1] + successorIndex)
+                           * sizeof(*playerKnot))
+                            + offsetof(struct knot, winPercentage),
+                          SEEK_SET);
+                    fread(&successorWinPercentage,
+                          sizeof(successorWinPercentage), 1, saveFile);
+                    fclose(saveFile);
+
                     if (bestWinpercentage <= successorWinPercentage)
                     {
                         bestTurn = i;
                         bestWinpercentage = successorWinPercentage;
                     }
                 }
-                playerKnot =
-                  turns[turnIndex + 1][playerKnot->successorIndices[bestTurn]];
+                int bestSuccessorIndex = playerKnot->successorIndices[bestTurn];
+                FILE *saveFile = fopen(saveFileName, "rb");
+                fseek(saveFile,
+                      (turnDisplacements[turnIndex + 1] + bestSuccessorIndex)
+                        * sizeof(*playerKnot),
+                      SEEK_SET);
+                fread(playerKnot, sizeof(*playerKnot), 1, saveFile);
+                fclose(saveFile);
+
                 struct gameboard *newGameboard;
                 newGameboard = put(playerGameboard, bestTurn);
                 *playerGameboard = *newGameboard;
