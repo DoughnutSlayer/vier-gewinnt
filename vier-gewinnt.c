@@ -112,6 +112,15 @@ int makePlayerTurn()
     return input;
 }
 
+void loadPlayerKnot()
+{
+    FILE *saveFile = fopen(saveFileName, "rb");
+    fseek(saveFile, (turnDisplacements[turnIndex]) * sizeof(*playerKnot),
+          SEEK_SET);
+    fread(playerKnot, sizeof(*playerKnot), 1, saveFile);
+    fclose(saveFile);
+}
+
 int main(int argc, char *argv[])
 {
     MPI_Init(&argc, &argv);
@@ -160,6 +169,7 @@ int main(int argc, char *argv[])
         printf("Resume\n");
 
         playerGameboard = playerGameboardCopy;
+        loadPlayerKnot();
         while (!playerGameboard->isWonBy)
         {
             if (playerGameboard->nextPlayer == 1)
