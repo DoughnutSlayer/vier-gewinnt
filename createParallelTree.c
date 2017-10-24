@@ -20,9 +20,9 @@ int turnDisplacements[(BOARD_WIDTH * BOARD_HEIGHT) + 1] = {0};
 int turnCounter = 0;
 
 // Queue 1 for current knots
-struct gameboard **currentGameboards;
+struct gameboard *currentGameboards;
 // Queue 2 for next knots
-struct gameboard **nextGameboards;
+struct gameboard *nextGameboards;
 
 struct gameboard zeroBoard = {0};
 
@@ -64,22 +64,13 @@ void setTurnSize(int turnIndex, int turnSize)
     setTurnDisplacement(turnIndex);
 }
 
-void deleteCurrentGameboards()
-{
-    for (int i = 0; i < currentGameboardsCount; i++)
-    {
-        free(currentGameboards[i]);
-    }
-    free(currentGameboards);
-}
-
 void refreshGameboardQueues()
 {
-    deleteCurrentGameboards();
+    free(currentGameboards);
     currentGameboards = nextGameboards;
     currentGameboardsCount = nextGameboardsCount;
     nextGameboards =
-      malloc(sizeof(nextGameboards[0]) * currentGameboardsCount * boardWidth);
+      malloc(sizeof(*nextGameboards) * currentGameboardsCount * boardWidth);
     nextGameboardsCount = 0;
 }
 
@@ -90,7 +81,7 @@ void refreshKnotQueues()
     successorKnots = malloc(sizeof(*successorKnots) * currentGameboardsCount);
 }
 
-void initializeQueues(struct gameboard *startGameboard)
+void initializeQueues(struct gameboard startGameboard)
 {
     currentGameboards = malloc(sizeof(startGameboard));
     currentGameboards[0] = startGameboard;
@@ -130,11 +121,11 @@ void prepareBoardSend(int *totalSendCount, struct gameboard *boardSendBuffer,
     *totalSendCount = 0;
     for (int i = 0; i < currentGameboardsCount; i++)
     {
-        if (currentGameboards[i]->nextPlayer == 0)
+        if (currentGameboards[i].nextPlayer == 0)
         {
             continue;
         }
-        boardSendBuffer[*totalSendCount] = *(currentGameboards[i]);
+        boardSendBuffer[*totalSendCount] = currentGameboards[i];
         *totalSendCount = *totalSendCount + 1;
     }
 
@@ -224,16 +215,16 @@ void addCurrentGameboardsTurn()
         struct knot *predecessor = &(predecessorKnots[i]);
         for (int j = 0; j < boardWidth; j++)
         {
-            struct gameboard *successorGameboard =
+            struct gameboard successorGameboard =
               currentGameboards[(boardWidth * i) + j];
-            if (successorGameboard->nextPlayer == 0)
+            if (successorGameboard.nextPlayer == 0)
             {
                 predecessor->successorIndices[j] = -1;
                 continue;
             }
 
             struct knot *successor = &(successorKnots[currentTurnSize]);
-            if (successorGameboard->isWonBy == 2)
+            if (successorGameboard.isWonBy == 2)
             {
                 successor->winPercentage = 100;
             }
@@ -297,9 +288,9 @@ void fillNextGameboards(int totalRecvCount,
     {
         for (int j = 0; j < (boardWidth); j++)
         {
-            struct gameboard *successor = malloc(sizeof(*successor));
+            struct gameboard *successor =
+              &(nextGameboards[nextGameboardsCount]);
             *successor = successorArrays[i][j];
-            nextGameboards[nextGameboardsCount] = successor;
             nextGameboardsCount++;
         }
     }
@@ -388,8 +379,8 @@ void calculateTurns(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
             treeFinished = 1;
             for (int i = 0; i < nextGameboardsCount; i++)
             {
-                if (!(nextGameboards[i]->isWonBy)
-                    && nextGameboards[i]->nextPlayer)
+                if (!(nextGameboards[i].isWonBy)
+                    && nextGameboards[i].nextPlayer)
                 {
                     treeFinished = 0;
                     break;
@@ -512,7 +503,7 @@ void makeFirstTurn(struct knot *startKnot)
 
     struct gameboard(*resultBuffer)[BOARD_WIDTH] =
       malloc(sizeof(*resultBuffer));
-    calculateBoardSuccessors(1, currentGameboards[0], 0, resultBuffer);
+    calculateBoardSuccessors(1, currentGameboards, 0, resultBuffer);
     fillNextGameboards(1, resultBuffer);
     free(resultBuffer);
     nextTurn();
@@ -531,7 +522,7 @@ void buildParallelTree(struct knot *startKnot, struct gameboard *startGameboard)
     {
         setStartTurn(startGameboard);
         firstPlayer = (startGameboard->nextPlayer - turnCounter % 2);
-        initializeQueues(startGameboard);
+        initializeQueues(*startGameboard);
         makeFirstTurn(startKnot);
 
         FILE *knotsFile = fopen(saveFileName, "wb");
