@@ -16,12 +16,10 @@ struct gameboard
 {
     int predecessorIndex;
     int lanes[BOARD_WIDTH][BOARD_HEIGHT];
-    char hash[(BOARD_WIDTH * BOARD_HEIGHT) + 1];
     int isWonBy;
     int nextPlayer;
 };
 
 struct gameboard *put(struct gameboard *board, int laneIndex);
-void calculateHash(struct gameboard *board);
 
 #endif

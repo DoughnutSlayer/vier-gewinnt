@@ -1,3 +1,4 @@
+#include "vier-gewinnt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,11 +7,14 @@
 #include "knot.h"
 #include "mpi.h"
 
-extern const int boardWidth, boardHeight;
+char saveFileName[8];
 
 char invalidInputMessage[42];
 
-struct knot playerKnot;
+struct knot *playerKnot;
+struct gameboard *playerGameboard;
+
+int turnIndex = 0; // TODO: Give turnIndex to createParallelTree;
 
 void printPlayerGameboard()
 {
@@ -33,11 +37,11 @@ void printPlayerGameboard()
         for (int columnIndex = 0; columnIndex < boardWidth; columnIndex++)
         {
             char boardPiece = ' ';
-            if (playerKnot.gameboard->lanes[columnIndex][rowIndex] == 1)
+            if (playerGameboard->lanes[columnIndex][rowIndex] == 1)
             {
                 boardPiece = 'O';
             }
-            else if (playerKnot.gameboard->lanes[columnIndex][rowIndex] == 2)
+            else if (playerGameboard->lanes[columnIndex][rowIndex] == 2)
             {
                 boardPiece = 'X';
             }
@@ -90,93 +94,152 @@ int getNumberInput()
     return input;
 }
 
-void makePlayerTurn()
+int makePlayerTurn()
 {
-    struct gameboard *result = NULL;
-    result = put(playerKnot.gameboard, getNumberInput());
-    while (!result)
+    struct gameboard *newGameboard = NULL;
+    int input = getNumberInput();
+    newGameboard = put(playerGameboard, input);
+    while (!newGameboard)
     {
         printf("%s", invalidInputMessage);
         fflush(NULL);
-        result = put(playerKnot.gameboard, getNumberInput());
+        input = getNumberInput();
+        newGameboard = put(playerGameboard, input);
     }
-    *(playerKnot.gameboard) = *result;
-    calculateHash(playerKnot.gameboard);
-    free(result);
+    *playerGameboard = *newGameboard;
+    free(newGameboard);
+    turnIndex++;
+    return input;
+}
+
+void loadPlayerKnot()
+{
+    FILE *saveFile = fopen(saveFileName, "rb");
+    fseek(saveFile, (turnDisplacements[turnIndex]) * sizeof(*playerKnot),
+          SEEK_SET);
+    fread(playerKnot, sizeof(*playerKnot), 1, saveFile);
+    fclose(saveFile);
 }
 
 int main(int argc, char *argv[])
 {
     MPI_Init(&argc, &argv);
-    int rank;
+    int rank, worldSize;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &worldSize);
+
+    if (worldSize < 2)
+    {
+        printf("Please start this program with at least two processes, for "
+               "example by using mpirun.\n");
+        MPI_Finalize();
+        return 0;
+    }
+
+    sprintf(saveFileName, ".%dx%d", boardWidth, boardHeight);
+
+    struct gameboard *playerGameboardCopy =
+      malloc(sizeof(*playerGameboardCopy));
     if (rank == 0)
     {
         sprintf(invalidInputMessage, "Please enter a number between 0 and %d: ",
                 boardWidth - 1);
 
-        struct gameboard emptyBoard = {0};
-        emptyBoard.nextPlayer = 1;
-        playerKnot.gameboard = &emptyBoard;
-        playerKnot.successors =
-          malloc(sizeof(*(playerKnot.successors)) * boardWidth);
-        playerKnot.successorsCount = 0;
-        calculateHash(playerKnot.gameboard);
+        struct knot initialKnot = {.winPercentage = 0};
+        playerKnot = malloc(sizeof(*playerKnot));
+        *playerKnot = initialKnot;
+
+        struct gameboard initialGameboard = {.nextPlayer = 1};
+        playerGameboard = malloc(sizeof(*playerGameboard));
+        *playerGameboard = initialGameboard;
 
         printPlayerPrompt();
         makePlayerTurn();
         printPlayerGameboard();
         printf("Calculating...\n");
+
+        *playerGameboardCopy = *playerGameboard;
     }
 
-    buildParallelTree(&playerKnot);
+    buildParallelTree(playerKnot, playerGameboard);
 
     if (rank == 0)
     {
         printf("Resume\n");
-        while (!playerKnot.gameboard->isWonBy)
+
+        playerGameboard = playerGameboardCopy;
+        loadPlayerKnot();
+        while (!playerGameboard->isWonBy)
         {
-            if (playerKnot.gameboard->nextPlayer == 1)
+            if (playerGameboard->nextPlayer == 1)
             {
                 printPlayerPrompt();
-                makePlayerTurn();
-                for (int i = 0; i < playerKnot.successorsCount; i++)
-                {
-                    if (!strcmp(playerKnot.gameboard->hash,
-                                playerKnot.successors[i]->gameboard->hash))
-                    {
-                        playerKnot = *(playerKnot.successors[i]);
-                        break;
-                    }
-                }
+                int input = makePlayerTurn();
+                int nextKnotIndex = playerKnot->successorIndices[input];
+
+                FILE *saveFile = fopen(saveFileName, "rb");
+                fseek(saveFile, (turnDisplacements[turnIndex] + nextKnotIndex)
+                                  * sizeof(*playerKnot),
+                      SEEK_SET);
+                fread(playerKnot, sizeof(*playerKnot), 1, saveFile);
+                fclose(saveFile);
             }
             else
             {
                 printPlayerGameboard();
-                int bestSuccessorIndex = 0;
-                // printf("Player Successors: %d\n",
-                // playerKnot.successorsCount);
-                for (int i = 1; i < playerKnot.successorsCount; i++)
+                int bestTurn = 0;
+                double bestWinpercentage = 0;
+                for (int i = 0; i < boardWidth; i++)
                 {
-                    if (playerKnot.successors[bestSuccessorIndex]->winPercentage
-                        < playerKnot.successors[i]->winPercentage)
+                    int successorIndex = playerKnot->successorIndices[i];
+                    if (successorIndex < 0)
                     {
-                        bestSuccessorIndex = i;
+                        continue;
+                    }
+
+                    double successorWinPercentage = 0;
+                    FILE *saveFile = fopen(saveFileName, "rb");
+                    fseek(saveFile,
+                          ((turnDisplacements[turnIndex + 1] + successorIndex)
+                           * sizeof(*playerKnot))
+                            + offsetof(struct knot, winPercentage),
+                          SEEK_SET);
+                    fread(&successorWinPercentage,
+                          sizeof(successorWinPercentage), 1, saveFile);
+                    fclose(saveFile);
+
+                    if (bestWinpercentage <= successorWinPercentage)
+                    {
+                        bestTurn = i;
+                        bestWinpercentage = successorWinPercentage;
                     }
                 }
-                playerKnot = *(playerKnot.successors[bestSuccessorIndex]);
+                int bestSuccessorIndex = playerKnot->successorIndices[bestTurn];
+                FILE *saveFile = fopen(saveFileName, "rb");
+                fseek(saveFile,
+                      (turnDisplacements[turnIndex + 1] + bestSuccessorIndex)
+                        * sizeof(*playerKnot),
+                      SEEK_SET);
+                fread(playerKnot, sizeof(*playerKnot), 1, saveFile);
+                fclose(saveFile);
+
+                struct gameboard *newGameboard;
+                newGameboard = put(playerGameboard, bestTurn);
+                *playerGameboard = *newGameboard;
+                free(newGameboard);
+                turnIndex++;
             }
         }
         printPlayerGameboard();
-        if (playerKnot.gameboard->isWonBy == 1)
+        if (playerGameboard->isWonBy == 1)
         {
             printf("You Win!\n");
         }
-        else if (playerKnot.gameboard->isWonBy == 2)
+        else if (playerGameboard->isWonBy == 2)
         {
             printf("You Lose!\n");
         }
-        else if (playerKnot.gameboard->isWonBy == 2)
+        else if (playerGameboard->isWonBy == 3)
         {
             printf("It's a draw!\n");
         }
