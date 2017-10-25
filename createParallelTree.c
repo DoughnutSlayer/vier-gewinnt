@@ -318,6 +318,37 @@ void saveLastTurn()
     fclose(saveFile);
 }
 
+void calculateSendCounts(int *sendCnts, int *displacements, int *totalSendCount)
+{
+    *totalSendCount = 0;
+    for (int i = 0; i < currentGameboardsCount; i++)
+    {
+        if (currentGameboards[i].nextPlayer)
+        {
+            *totalSendCount += 1;
+        }
+    }
+
+    int sendPerProcess = *totalSendCount / worldSize;
+    for (int i = 0; i < worldSize; i++)
+    {
+        sendCnts[i] = sendPerProcess;
+        if (i < *totalSendCount % worldSize)
+        {
+            sendCnts[i] += 1;
+        }
+
+        if (i == 0)
+        {
+            displacements[i] = 0;
+        }
+        else
+        {
+            displacements[i] = displacements[i - 1] + sendCnts[i - 1];
+        }
+    }
+}
+
 void calculateTurns(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
 {
     int treeFinished = 0;
