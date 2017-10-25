@@ -24,16 +24,12 @@ int turnCounter = 0;
 
 // Queue 1 for current knots
 struct gameboard *currentGameboards;
+int currentGameboardsCount;
 const char (*currentGbFileNamePtr)[13] = &gbFileNameA;
 // Queue 2 for next knots
-struct gameboard *nextGameboards;
 const char (*nextGbFileNamePtr)[13] = &gbFileNameB;
 
 struct gameboard zeroBoard = {0};
-
-int currentGameboardsCount;
-
-int nextGameboardsCount;
 
 void setStartTurn(struct gameboard *startGameboard)
 {
