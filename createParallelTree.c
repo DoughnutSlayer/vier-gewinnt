@@ -86,9 +86,12 @@ void initializeQueues(struct gameboard startGameboard)
     currentGameboards = malloc(sizeof(startGameboard));
     currentGameboards[0] = startGameboard;
     currentGameboardsCount = 1;
-    nextGameboards =
-      malloc(sizeof(*nextGameboards) * currentGameboardsCount * boardWidth);
-    nextGameboardsCount = 0;
+
+    FILE *currentGbFile = fopen(*currentGbFileNamePtr, "wb");
+    fwrite(currentGameboards, sizeof(*currentGameboards), 1, currentGbFile);
+    fclose(currentGbFile);
+    FILE *nextGbFile = fopen(*nextGbFileNamePtr, "wb");
+    fclose(nextGbFile);
 }
 
 void defineMPIDatatypes(MPI_Datatype *boardType, MPI_Datatype *boardArrayType,
