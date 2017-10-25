@@ -365,16 +365,21 @@ void calculateTurns(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
     {
         if (rank == 0)
         {
+            calculateSendCounts(sendCnts, displacements, &totalSendCount);
+        }
+        MPI_Scatter(sendCnts, 1, MPI_INT, &recvCnt, 1, MPI_INT, 0,
+                    MPI_COMM_WORLD);
+        MPI_Scatter(displacements, 1, MPI_INT, &displacement, 1, MPI_INT, 0,
+                    MPI_COMM_WORLD);
+
+        if (rank == 0)
+        {
             taskSendBuffer =
               malloc(sizeof(*taskSendBuffer) * (currentGameboardsCount));
             prepareBoardSend(&totalSendCount, taskSendBuffer, sendCnts,
                              displacements);
         }
 
-        MPI_Scatter(displacements, 1, MPI_INT, &displacement, 1, MPI_INT, 0,
-                    MPI_COMM_WORLD);
-        MPI_Scatter(sendCnts, 1, MPI_INT, &recvCnt, 1, MPI_INT, 0,
-                    MPI_COMM_WORLD);
         taskRecvBuffer =
           (struct gameboard *) malloc(sizeof(*taskRecvBuffer) * recvCnt);
         MPI_Scatterv(taskSendBuffer, sendCnts, displacements, *boardType,
