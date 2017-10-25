@@ -270,19 +270,16 @@ void calculatePredecessorWinpercentages(
     }
 }
 
-void fillNextGameboards(int totalRecvCount,
+void saveNextGameboards(int totalRecvCount,
                         struct gameboard (*successorArrays)[BOARD_WIDTH])
 {
+    FILE *nextGbFile = fopen(*nextGbFileNamePtr, "ab");
     for (int i = 0; i < totalRecvCount; i++)
     {
-        for (int j = 0; j < (boardWidth); j++)
-        {
-            struct gameboard *successor =
-              &(nextGameboards[nextGameboardsCount]);
-            *successor = successorArrays[i][j];
-            nextGameboardsCount++;
-        }
+        fwrite(successorArrays[i], sizeof(**successorArrays), boardWidth,
+               nextGbFile);
     }
+    fclose(nextGbFile);
 }
 
 void nextTurn()
@@ -579,7 +576,8 @@ void makeFirstTurn(struct knot *startKnot)
     struct gameboard(*resultBuffer)[BOARD_WIDTH] =
       malloc(sizeof(*resultBuffer));
     calculateBoardSuccessors(1, currentGameboards, 0, resultBuffer);
-    fillNextGameboards(1, resultBuffer);
+    saveNextGameboards(1, resultBuffer);
+
     free(resultBuffer);
     nextTurn();
 }
