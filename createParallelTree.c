@@ -8,6 +8,9 @@
 #include "knot.h"
 #include "vier-gewinnt.h"
 
+const char gbFileNameA[13] = ".gameboardsA";
+const char gbFileNameB[13] = ".gameboardsB";
+
 int rank;
 int worldSize;
 int firstPlayer;
@@ -21,8 +24,10 @@ int turnCounter = 0;
 
 // Queue 1 for current knots
 struct gameboard *currentGameboards;
+const char (*currentGbFileNamePtr)[13] = &gbFileNameA;
 // Queue 2 for next knots
 struct gameboard *nextGameboards;
+const char (*nextGbFileNamePtr)[13] = &gbFileNameB;
 
 struct gameboard zeroBoard = {0};
 
