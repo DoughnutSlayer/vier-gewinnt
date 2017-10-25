@@ -318,6 +318,56 @@ void saveLastTurn()
     fclose(saveFile);
 }
 
+int calculateTurnSteps(int recvCnt, int totalSendCount)
+{
+    long unsigned int gbSize = sizeof(struct gameboard);
+    struct gameboard gbArray[BOARD_WIDTH];
+    long unsigned int gbArrSize = sizeof(gbArray);
+    long unsigned int knotSize = sizeof(struct knot);
+
+    int buffer = 0;
+    int sufficientMemory = 0;
+    int turnSteps = 1;
+    long unsigned int neededBytes = 0;
+
+    if (rank == 0)
+    {
+        neededBytes +=
+          gbSize * currentGameboardsCount                // taskSendBuffer
+          + gbArrSize * totalSendCount                   // resultRecvBuffer
+          - gbSize * currentGameboardsCount              // currentGameboards
+          + gbSize * currentGameboardsCount * boardWidth // nextGameboards
+          - knotSize * turnSizes[turnCounter - 1]        // predecessorKnots
+          + knotSize * currentGameboardsCount;           // successorKnots
+    }
+    neededBytes += gbSize * recvCnt      // taskRecvBuffer
+                   + gbArrSize * recvCnt // resultSendBuffer
+                   + gbSize              // createdBoard
+                   + 1000;               // buffer
+
+    while (!sufficientMemory)
+    {
+        void *placeholder = malloc((neededBytes / turnSteps) + 1);
+        buffer = (placeholder) ? 1 : 0;
+
+        for (int i = 0; i < worldSize; i++)
+        {
+            if (rank == i)
+            {
+                sufficientMemory = buffer;
+            }
+            MPI_Bcast(&sufficientMemory, 1, MPI_INT, i, MPI_COMM_WORLD);
+            if (!sufficientMemory)
+            {
+                turnSteps++;
+                break;
+            }
+        }
+        free(placeholder);
+    }
+    return turnSteps;
+}
+
 void calculateSendCounts(int *sendCnts, int *displacements, int *totalSendCount)
 {
     *totalSendCount = 0;
