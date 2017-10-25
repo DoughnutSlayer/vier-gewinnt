@@ -421,6 +421,8 @@ void calculateTurns(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
                     MPI_COMM_WORLD);
         MPI_Scatter(displacements, 1, MPI_INT, &displacement, 1, MPI_INT, 0,
                     MPI_COMM_WORLD);
+        MPI_Bcast(&totalSendCount, 1, MPI_INT, 0, MPI_COMM_WORLD);
+        int turnSteps = calculateTurnSteps(recvCnt, totalSendCount);
 
         if (rank == 0)
         {
