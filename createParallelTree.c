@@ -65,14 +65,13 @@ void setTurnSize(int turnIndex, int turnSize)
     setTurnDisplacement(turnIndex);
 }
 
-void refreshGameboardQueues()
+void refreshGameboardFiles()
 {
-    free(currentGameboards);
-    currentGameboards = nextGameboards;
-    currentGameboardsCount = nextGameboardsCount;
-    nextGameboards =
-      malloc(sizeof(*nextGameboards) * currentGameboardsCount * boardWidth);
-    nextGameboardsCount = 0;
+    const char(*buf)[13] = currentGbFileNamePtr;
+    currentGbFileNamePtr = nextGbFileNamePtr;
+    nextGbFileNamePtr = buf;
+    FILE *nextGbFile = fopen(*nextGbFileNamePtr, "wb");
+    fclose(nextGbFile);
 }
 
 void refreshKnotQueues()
@@ -285,7 +284,7 @@ void fillNextGameboards(int totalRecvCount,
 
 void nextTurn()
 {
-    refreshGameboardQueues();
+    refreshGameboardFiles();
     refreshKnotQueues();
     turnCounter++;
 }
