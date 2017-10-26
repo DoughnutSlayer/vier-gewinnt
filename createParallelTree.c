@@ -361,13 +361,21 @@ int calculateTurnSteps(int recvCnt, int totalSendCount)
 void calculateSendCounts(int *sendCnts, int *displacements, int *totalSendCount)
 {
     *totalSendCount = 0;
+
+    FILE *currentGbFile = fopen(*currentGbFileNamePtr, "rb");
+    fseek(currentGbFile, offsetof(struct gameboard, nextPlayer), SEEK_SET);
+    int nextPlayer = 0;
     for (int i = 0; i < currentGameboardsCount; i++)
     {
-        if (currentGameboardsBuffer[i].nextPlayer)
+        fread(&nextPlayer, sizeof(nextPlayer), 1, currentGbFile);
+        if (nextPlayer)
         {
             *totalSendCount += 1;
         }
+        fseek(currentGbFile, sizeof(struct gameboard) - sizeof(nextPlayer),
+              SEEK_CUR);
     }
+    fclose(currentGbFile);
 
     int sendPerProcess = *totalSendCount / worldSize;
     for (int i = 0; i < worldSize; i++)
