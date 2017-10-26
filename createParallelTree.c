@@ -355,7 +355,7 @@ int calculateTurnSteps(int recvCnt, int totalSendCount)
     return turnSteps;
 }
 
-void calculateSendCounts(int *sendCnts, int *displacements, int *totalSendCount)
+void calculateTotalSendCount(int *totalSendCount)
 {
     *totalSendCount = 0;
 
@@ -373,12 +373,15 @@ void calculateSendCounts(int *sendCnts, int *displacements, int *totalSendCount)
               SEEK_CUR);
     }
     fclose(currentGbFile);
+}
 
-    int sendPerProcess = *totalSendCount / worldSize;
+void calculateSendCounts(int totalSendCount, int *sendCnts, int *displacements)
+{
+    int sendPerProcess = totalSendCount / worldSize;
     for (int i = 0; i < worldSize; i++)
     {
         sendCnts[i] = sendPerProcess;
-        if (i < *totalSendCount % worldSize)
+        if (i < totalSendCount % worldSize)
         {
             sendCnts[i] += 1;
         }
@@ -423,7 +426,8 @@ void calculateTurns(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
     {
         if (rank == 0)
         {
-            calculateSendCounts(sendCnts, displacements, &totalSendCount);
+            calculateTotalSendCount(&totalSendCount);
+            calculateSendCounts(totalSendCount, sendCnts, displacements);
         }
         MPI_Scatter(sendCnts, 1, MPI_INT, &recvCnt, 1, MPI_INT, 0,
                     MPI_COMM_WORLD);
