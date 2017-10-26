@@ -27,6 +27,7 @@ struct gameboard *currentGameboardsBuffer;
 int currentGameboardsCount;
 const char (*currentGbFileNamePtr)[13] = &gbFileNameA;
 // Queue 2 for next knots
+int nextGameboardsCount;
 const char (*nextGbFileNamePtr)[13] = &gbFileNameB;
 
 struct gameboard zeroBoard = {0};
@@ -69,7 +70,9 @@ void refreshGameboardFiles()
 {
     const char(*buf)[13] = currentGbFileNamePtr;
     currentGbFileNamePtr = nextGbFileNamePtr;
+    currentGameboardsCount = nextGameboardsCount;
     nextGbFileNamePtr = buf;
+    nextGameboardsCount = 0;
     FILE *nextGbFile = fopen(*nextGbFileNamePtr, "wb");
     fclose(nextGbFile);
 }
