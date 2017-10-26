@@ -394,6 +394,19 @@ void calculateSendCounts(int *sendCnts, int *displacements, int *totalSendCount)
     }
 }
 
+void loadCurrentGameboards(int currentStep, int turnSteps)
+{
+    int loadNumber = currentGameboardsCount / turnSteps;
+    loadNumber += (currentStep < currentGameboardsCount % turnSteps) ? 1 : 0;
+    currentGameboardsBuffer =
+      malloc(sizeof(*currentGameboardsBuffer) * loadNumber);
+    FILE *currentGbFile = fopen(*currentGbFileNamePtr, "rb");
+    fseek(currentGbFile, 0, SEEK_SET);
+    fread(currentGameboardsBuffer, sizeof(*currentGameboardsBuffer),
+          currentGameboardsCount, currentGbFile);
+    fclose(currentGbFile);
+}
+
 void calculateTurns(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
 {
     int treeFinished = 0;
