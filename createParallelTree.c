@@ -23,7 +23,7 @@ int turnDisplacements[(BOARD_WIDTH * BOARD_HEIGHT) + 1] = {0};
 int turnCounter = 0;
 
 // Queue 1 for current knots
-struct gameboard *currentGameboards;
+struct gameboard *currentGameboardsBuffer;
 int currentGameboardsCount;
 const char (*currentGbFileNamePtr)[13] = &gbFileNameA;
 // Queue 2 for next knots
@@ -83,12 +83,13 @@ void refreshKnotQueues()
 
 void initializeQueues(struct gameboard startGameboard)
 {
-    currentGameboards = malloc(sizeof(startGameboard));
-    currentGameboards[0] = startGameboard;
+    currentGameboardsBuffer = malloc(sizeof(startGameboard));
+    currentGameboardsBuffer[0] = startGameboard;
     currentGameboardsCount = 1;
 
     FILE *currentGbFile = fopen(*currentGbFileNamePtr, "wb");
-    fwrite(currentGameboards, sizeof(*currentGameboards), 1, currentGbFile);
+    fwrite(currentGameboardsBuffer, sizeof(*currentGameboardsBuffer), 1,
+           currentGbFile);
     fclose(currentGbFile);
     FILE *nextGbFile = fopen(*nextGbFileNamePtr, "wb");
     fclose(nextGbFile);
@@ -123,12 +124,12 @@ void prepareBoardSend(int totalSendCount, struct gameboard *boardSendBuffer)
     int currentBoardIndex = 0;
     for (int i = 0; i < totalSendCount;)
     {
-        if (currentGameboards[i].nextPlayer == 0)
+        if (currentGameboardsBuffer[i].nextPlayer == 0)
         {
             currentBoardIndex++;
             continue;
         }
-        boardSendBuffer[i] = currentGameboards[currentBoardIndex];
+        boardSendBuffer[i] = currentGameboardsBuffer[currentBoardIndex];
         currentBoardIndex++;
         i++;
     }
@@ -205,7 +206,7 @@ void addCurrentGameboardsTurn()
         for (int j = 0; j < boardWidth; j++)
         {
             struct gameboard successorGameboard =
-              currentGameboards[(boardWidth * i) + j];
+              currentGameboardsBuffer[(boardWidth * i) + j];
             if (successorGameboard.nextPlayer == 0)
             {
                 predecessor->successorIndices[j] = -1;
@@ -319,9 +320,9 @@ int calculateTurnSteps(int recvCnt, int totalSendCount)
     if (rank == 0)
     {
         neededBytes +=
-          gbSize * currentGameboardsCount                // taskSendBuffer
-          + gbArrSize * totalSendCount                   // resultRecvBuffer
-          - gbSize * currentGameboardsCount              // currentGameboards
+          gbSize * currentGameboardsCount   // taskSendBuffer
+          + gbArrSize * totalSendCount      // resultRecvBuffer
+          - gbSize * currentGameboardsCount // currentGameboardsBuffer
           + gbSize * currentGameboardsCount * boardWidth // nextGameboards
           - knotSize * turnSizes[turnCounter - 1]        // predecessorKnots
           + knotSize * currentGameboardsCount;           // successorKnots
@@ -359,7 +360,7 @@ void calculateSendCounts(int *sendCnts, int *displacements, int *totalSendCount)
     *totalSendCount = 0;
     for (int i = 0; i < currentGameboardsCount; i++)
     {
-        if (currentGameboards[i].nextPlayer)
+        if (currentGameboardsBuffer[i].nextPlayer)
         {
             *totalSendCount += 1;
         }
@@ -575,7 +576,7 @@ void makeFirstTurn(struct knot *startKnot)
 
     struct gameboard(*resultBuffer)[BOARD_WIDTH] =
       malloc(sizeof(*resultBuffer));
-    calculateBoardSuccessors(1, currentGameboards, 0, resultBuffer);
+    calculateBoardSuccessors(1, currentGameboardsBuffer, 0, resultBuffer);
     saveNextGameboards(1, resultBuffer);
 
     free(resultBuffer);
