@@ -417,7 +417,6 @@ void calculateTurns(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
     int totalSendCount = 0;
     int *sendCnts = malloc(sizeof(*sendCnts) * worldSize);
     int *displacements = malloc(sizeof(*sendCnts) * worldSize);
-    int displacement = 0;
     struct gameboard *taskRecvBuffer;
     int recvCnt;
     struct gameboard(*resultSendBuffer)[BOARD_WIDTH];
@@ -430,8 +429,6 @@ void calculateTurns(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
             calculateSendCounts(totalSendCount, sendCnts, displacements);
         }
         MPI_Scatter(sendCnts, 1, MPI_INT, &recvCnt, 1, MPI_INT, 0,
-                    MPI_COMM_WORLD);
-        MPI_Scatter(displacements, 1, MPI_INT, &displacement, 1, MPI_INT, 0,
                     MPI_COMM_WORLD);
         MPI_Bcast(&totalSendCount, 1, MPI_INT, 0, MPI_COMM_WORLD);
         int turnSteps = calculateTurnSteps(recvCnt, totalSendCount);
