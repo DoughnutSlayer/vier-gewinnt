@@ -315,7 +315,7 @@ int calculateTurnSteps(int recvCnt, int totalSendCount)
     long unsigned int gbArrSize = sizeof(gbArray);
     long unsigned int knotSize = sizeof(struct knot);
 
-    int buffer = 0;
+    int resultBuffer = 0;
     int sufficientMemory = 0;
     int turnSteps = 1;
     long unsigned int neededBytes = 0;
@@ -323,12 +323,11 @@ int calculateTurnSteps(int recvCnt, int totalSendCount)
     if (rank == 0)
     {
         neededBytes +=
-          gbSize * currentGameboardsCount   // taskSendBuffer
-          + gbArrSize * totalSendCount      // resultRecvBuffer
-          - gbSize * currentGameboardsCount // currentGameboardsBuffer
-          + gbSize * currentGameboardsCount * boardWidth // nextGameboards
-          - knotSize * turnSizes[turnCounter - 1]        // predecessorKnots
-          + knotSize * currentGameboardsCount;           // successorKnots
+          gbSize * currentGameboardsCount         // currentGameboardsBuffer
+          + gbSize * currentGameboardsCount       // taskSendBuffer
+          + gbArrSize * totalSendCount            // resultRecvBuffer
+          - knotSize * turnSizes[turnCounter - 1] // predecessorKnots
+          + knotSize * currentGameboardsCount;    // successorKnots
     }
     neededBytes += gbSize * recvCnt      // taskRecvBuffer
                    + gbArrSize * recvCnt // resultSendBuffer
@@ -338,13 +337,13 @@ int calculateTurnSteps(int recvCnt, int totalSendCount)
     while (!sufficientMemory)
     {
         void *placeholder = malloc((neededBytes / turnSteps) + 1);
-        buffer = (placeholder) ? 1 : 0;
+        resultBuffer = (placeholder) ? 1 : 0;
 
         for (int i = 0; i < worldSize; i++)
         {
             if (rank == i)
             {
-                sufficientMemory = buffer;
+                sufficientMemory = resultBuffer;
             }
             MPI_Bcast(&sufficientMemory, 1, MPI_INT, i, MPI_COMM_WORLD);
             if (!sufficientMemory)
