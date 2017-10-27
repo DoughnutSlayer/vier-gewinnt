@@ -500,6 +500,10 @@ void calculateTurns(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
             {
                 saveNextGameboards(currentStepSendCount, resultRecvBuffer);
                 free(resultRecvBuffer);
+            }
+        }
+            if (rank == 0)
+            {
                 treeFinished = 1;
                 for (int i = 0; i < nextGameboardsCount; i++)
                 {
@@ -522,8 +526,7 @@ void calculateTurns(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
                     predecessorKnots = NULL;
                 }
             }
-            MPI_Bcast(&treeFinished, 1, MPI_INT, 0, MPI_COMM_WORLD);
-        }
+        MPI_Bcast(&treeFinished, 1, MPI_INT, 0, MPI_COMM_WORLD);
     }
     free(sendCnts);
     free(displacements);
