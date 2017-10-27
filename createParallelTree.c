@@ -398,27 +398,28 @@ void calculateSendCounts(int totalSendCount, int *sendCnts, int *displacements)
 
 void loadCurrentGameboards(int currentStep, int turnSteps)
 {
-    int loadNumber = currentGameboardsCount / turnSteps;
+    currentBufferedGameboardsCount = currentGameboardsCount / turnSteps;
     int offset = sizeof(*currentGameboardsBuffer);
     int whence;
     if (currentStep < currentGameboardsCount % turnSteps)
     {
-        loadNumber++;
-        offset *= loadNumber * currentStep;
+        currentBufferedGameboardsCount++;
+        offset *= currentBufferedGameboardsCount * currentStep;
         whence = SEEK_SET;
     }
     else
     {
-        offset *= -1 * (loadNumber * (turnSteps - currentStep));
+        offset *=
+          -1 * (currentBufferedGameboardsCount * (turnSteps - currentStep));
         whence = SEEK_END;
     }
 
     currentGameboardsBuffer =
-      malloc(sizeof(*currentGameboardsBuffer) * loadNumber);
+      malloc(sizeof(*currentGameboardsBuffer) * currentBufferedGameboardsCount);
     FILE *currentGbFile = fopen(*currentGbFileNamePtr, "rb");
     fseek(currentGbFile, offset, whence);
-    fread(currentGameboardsBuffer, sizeof(*currentGameboardsBuffer), loadNumber,
-          currentGbFile);
+    fread(currentGameboardsBuffer, sizeof(*currentGameboardsBuffer),
+          currentBufferedGameboardsCount, currentGbFile);
     fclose(currentGbFile);
 }
 
