@@ -435,66 +435,68 @@ void calculateTurns(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
 
         for (int i = 0; i < turnSteps; i++)
         {
-        if (rank == 0)
-        {
-            taskSendBuffer = malloc(sizeof(*taskSendBuffer) * totalSendCount);
-            prepareBoardSend(totalSendCount, taskSendBuffer);
-        }
-
-        taskRecvBuffer =
-          (struct gameboard *) malloc(sizeof(*taskRecvBuffer) * recvCnt);
-        MPI_Scatterv(taskSendBuffer, sendCnts, displacements, *boardType,
-                     taskRecvBuffer, recvCnt, *boardType, 0, MPI_COMM_WORLD);
-        if (rank == 0)
-        {
-            free(taskSendBuffer);
-        }
-
-        resultSendBuffer = malloc(sizeof(resultSendBuffer[0]) * recvCnt);
-        calculateBoardSuccessors(recvCnt, taskRecvBuffer, resultSendBuffer);
-        if (rank == 0)
-        {
-            addCurrentGameboardsTurn();
-        }
-        free(taskRecvBuffer);
-
-        if (rank == 0)
-        {
-            resultRecvBuffer =
-              malloc(sizeof(resultRecvBuffer[0]) * totalSendCount);
-        }
-        MPI_Gatherv(resultSendBuffer, recvCnt, *boardArrayType,
-                    resultRecvBuffer, sendCnts, displacements, *boardArrayType,
-                    0, MPI_COMM_WORLD);
-        free(resultSendBuffer);
-
-        if (rank == 0)
-        {
-            fillNextGameboards(totalSendCount, resultRecvBuffer);
-            free(resultRecvBuffer);
-            treeFinished = 1;
-            for (int i = 0; i < nextGameboardsCount; i++)
+            if (rank == 0)
             {
-                if (!(nextGameboards[i].isWonBy)
-                    && nextGameboards[i].nextPlayer)
-                {
-                    treeFinished = 0;
-                    break;
-                }
+                taskSendBuffer =
+                  malloc(sizeof(*taskSendBuffer) * totalSendCount);
+                prepareBoardSend(totalSendCount, taskSendBuffer);
             }
-            nextTurn();
-            if (treeFinished)
+
+            taskRecvBuffer =
+              (struct gameboard *) malloc(sizeof(*taskRecvBuffer) * recvCnt);
+            MPI_Scatterv(taskSendBuffer, sendCnts, displacements, *boardType,
+                         taskRecvBuffer, recvCnt, *boardType, 0,
+                         MPI_COMM_WORLD);
+            if (rank == 0)
+            {
+                free(taskSendBuffer);
+            }
+
+            resultSendBuffer = malloc(sizeof(resultSendBuffer[0]) * recvCnt);
+            calculateBoardSuccessors(recvCnt, taskRecvBuffer, resultSendBuffer);
+            if (rank == 0)
             {
                 addCurrentGameboardsTurn();
-                saveLastTurn();
-
-                free(nextGameboards);
-                nextGameboards = NULL;
-                free(predecessorKnots);
-                predecessorKnots = NULL;
             }
-        }
-        MPI_Bcast(&treeFinished, 1, MPI_INT, 0, MPI_COMM_WORLD);
+            free(taskRecvBuffer);
+
+            if (rank == 0)
+            {
+                resultRecvBuffer =
+                  malloc(sizeof(resultRecvBuffer[0]) * totalSendCount);
+            }
+            MPI_Gatherv(resultSendBuffer, recvCnt, *boardArrayType,
+                        resultRecvBuffer, sendCnts, displacements,
+                        *boardArrayType, 0, MPI_COMM_WORLD);
+            free(resultSendBuffer);
+
+            if (rank == 0)
+            {
+                fillNextGameboards(totalSendCount, resultRecvBuffer);
+                free(resultRecvBuffer);
+                treeFinished = 1;
+                for (int i = 0; i < nextGameboardsCount; i++)
+                {
+                    if (!(nextGameboards[i].isWonBy)
+                        && nextGameboards[i].nextPlayer)
+                    {
+                        treeFinished = 0;
+                        break;
+                    }
+                }
+                nextTurn();
+                if (treeFinished)
+                {
+                    addCurrentGameboardsTurn();
+                    saveLastTurn();
+
+                    free(nextGameboards);
+                    nextGameboards = NULL;
+                    free(predecessorKnots);
+                    predecessorKnots = NULL;
+                }
+            }
+            MPI_Bcast(&treeFinished, 1, MPI_INT, 0, MPI_COMM_WORLD);
         }
     }
     free(sendCnts);
