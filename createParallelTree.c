@@ -69,13 +69,6 @@ void refreshGameboardFiles()
     fclose(nextGbFile);
 }
 
-void refreshKnotQueues()
-{
-    free(predecessorKnots);
-    predecessorKnots = successorKnots;
-    successorKnots = malloc(sizeof(*successorKnots) * currentGameboardsCount);
-}
-
 void initializeQueues(struct gameboard startGameboard)
 {
     currentGameboardsBuffer = malloc(sizeof(startGameboard));
