@@ -445,6 +445,7 @@ void calculateTurns(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
                     MPI_COMM_WORLD);
         MPI_Bcast(&totalSendCount, 1, MPI_INT, 0, MPI_COMM_WORLD);
         int turnSteps = calculateTurnSteps(recvCnt, totalSendCount);
+        turnSizes[turnCounter] = 0;
 
         for (int i = 0; i < turnSteps; i++)
         {
