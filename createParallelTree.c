@@ -502,30 +502,30 @@ void calculateTurns(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
                 free(resultRecvBuffer);
             }
         }
-            if (rank == 0)
+        if (rank == 0)
+        {
+            treeFinished = 1;
+            for (int i = 0; i < nextGameboardsCount; i++)
             {
-                treeFinished = 1;
-                for (int i = 0; i < nextGameboardsCount; i++)
+                if (!(nextGameboards[i].isWonBy)
+                    && nextGameboards[i].nextPlayer)
                 {
-                    if (!(nextGameboards[i].isWonBy)
-                        && nextGameboards[i].nextPlayer)
-                    {
-                        treeFinished = 0;
-                        break;
-                    }
-                }
-                nextTurn();
-                if (treeFinished)
-                {
-                    addCurrentGameboardsTurn();
-                    saveLastTurn();
-
-                    free(nextGameboards);
-                    nextGameboards = NULL;
-                    free(predecessorKnots);
-                    predecessorKnots = NULL;
+                    treeFinished = 0;
+                    break;
                 }
             }
+            nextTurn();
+            if (treeFinished)
+            {
+                addCurrentGameboardsTurn();
+                saveLastTurn();
+
+                free(nextGameboards);
+                nextGameboards = NULL;
+                free(predecessorKnots);
+                predecessorKnots = NULL;
+            }
+        }
         MPI_Bcast(&treeFinished, 1, MPI_INT, 0, MPI_COMM_WORLD);
     }
     free(sendCnts);
