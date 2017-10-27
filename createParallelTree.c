@@ -622,8 +622,9 @@ void calculateWinpercentages(MPI_Datatype *winpercentageArrayType)
 
 void makeFirstTurn(struct knot *startKnot)
 {
-    successorKnots = malloc(sizeof(*startKnot));
-    successorKnots[0] = *startKnot;
+    FILE *saveFile = fopen(saveFileName, "ab");
+    fwrite(startKnot, sizeof(*startKnot), 1, saveFile);
+    fclose(saveFile);
     turnSizes[turnCounter] = 1;
     setTurnDisplacement(turnCounter);
 
