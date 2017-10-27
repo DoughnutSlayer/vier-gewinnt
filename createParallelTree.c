@@ -433,6 +433,8 @@ void calculateTurns(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
         MPI_Bcast(&totalSendCount, 1, MPI_INT, 0, MPI_COMM_WORLD);
         int turnSteps = calculateTurnSteps(recvCnt, totalSendCount);
 
+        for (int i = 0; i < turnSteps; i++)
+        {
         if (rank == 0)
         {
             taskSendBuffer = malloc(sizeof(*taskSendBuffer) * totalSendCount);
@@ -493,6 +495,7 @@ void calculateTurns(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
             }
         }
         MPI_Bcast(&treeFinished, 1, MPI_INT, 0, MPI_COMM_WORLD);
+        }
     }
     free(sendCnts);
     free(displacements);
