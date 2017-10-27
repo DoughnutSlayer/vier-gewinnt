@@ -15,20 +15,18 @@ int rank;
 int worldSize;
 int firstPlayer;
 
-struct knot *predecessorKnots;
-struct knot *successorKnots;
-
 int turnSizes[(BOARD_WIDTH * BOARD_HEIGHT) + 1] = {0};
 int turnDisplacements[(BOARD_WIDTH * BOARD_HEIGHT) + 1] = {0};
 int turnCounter = 0;
 
 // Queue 1 for current knots
-struct gameboard *currentGameboardsBuffer;
-int currentGameboardsCount;
 const char (*currentGbFileNamePtr)[13] = &gbFileNameA;
+int currentGameboardsCount;
+struct gameboard *currentGameboardsBuffer;
+int currentBufferedGameboardsCount;
 // Queue 2 for next knots
-int nextGameboardsCount;
 const char (*nextGbFileNamePtr)[13] = &gbFileNameB;
+int nextGameboardsCount;
 
 struct gameboard zeroBoard = {0};
 
