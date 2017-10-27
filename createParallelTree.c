@@ -448,6 +448,17 @@ void calculateTurns(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
 
         for (int i = 0; i < turnSteps; i++)
         {
+            int currentTurnSendCount = totalSendCount / turnSteps;
+            if (turnSteps > 1)
+            {
+                currentTurnSendCount +=
+                  (i < totalSendCount % turnSteps) ? 1 : 0;
+                calculateSendCounts(currentTurnSendCount, sendCnts,
+                                    displacements);
+                MPI_Scatter(sendCnts, 1, MPI_INT, &recvCnt, 1, MPI_INT, 0,
+                            MPI_COMM_WORLD);
+            }
+
             if (rank == 0)
             {
                 taskSendBuffer =
