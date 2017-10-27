@@ -463,8 +463,8 @@ void calculateTurns(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
             {
                 loadCurrentGameboards(i, turnSteps);
                 taskSendBuffer =
-                  malloc(sizeof(*taskSendBuffer) * totalSendCount);
-                prepareBoardSend(totalSendCount, taskSendBuffer);
+                  malloc(sizeof(*taskSendBuffer) * currentStepSendCount);
+                prepareBoardSend(currentStepSendCount, taskSendBuffer);
             }
 
             taskRecvBuffer =
