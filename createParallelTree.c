@@ -74,6 +74,7 @@ void initializeQueues(struct gameboard startGameboard)
     currentGameboardsBuffer = malloc(sizeof(startGameboard));
     currentGameboardsBuffer[0] = startGameboard;
     currentGameboardsCount = 1;
+    currentBufferedGameboardsCount = 1;
 
     FILE *currentGbFile = fopen(*currentGbFileNamePtr, "wb");
     fwrite(currentGameboardsBuffer, sizeof(*currentGameboardsBuffer), 1,
