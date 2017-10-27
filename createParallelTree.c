@@ -498,7 +498,7 @@ void calculateTurns(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
 
             if (rank == 0)
             {
-                fillNextGameboards(totalSendCount, resultRecvBuffer);
+                saveNextGameboards(currentStepSendCount, resultRecvBuffer);
                 free(resultRecvBuffer);
                 treeFinished = 1;
                 for (int i = 0; i < nextGameboardsCount; i++)
