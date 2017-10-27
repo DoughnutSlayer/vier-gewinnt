@@ -60,12 +60,6 @@ void setTurnDisplacement(int turnIndex)
     }
 }
 
-void setTurnSize(int turnIndex, int turnSize)
-{
-    turnSizes[turnIndex] = turnSize;
-    setTurnDisplacement(turnIndex);
-}
-
 void refreshGameboardFiles()
 {
     const char(*buf)[13] = currentGbFileNamePtr;
@@ -226,7 +220,8 @@ void addCurrentGameboardsTurn()
             currentTurnSize++;
         }
     }
-    setTurnSize(turnCounter, currentTurnSize);
+    turnSizes[turnCounter] += currentTurnSize;
+    setTurnDisplacement(turnCounter);
 
     FILE *knotsFile = fopen(saveFileName, "ab");
     fwrite(predecessorKnots, sizeof(*predecessorKnots),
@@ -623,7 +618,8 @@ void makeFirstTurn(struct knot *startKnot)
 {
     successorKnots = malloc(sizeof(*startKnot));
     successorKnots[0] = *startKnot;
-    setTurnSize(turnCounter, 1);
+    turnSizes[turnCounter] = 1;
+    setTurnDisplacement(turnCounter);
 
     struct gameboard(*resultBuffer)[BOARD_WIDTH] =
       malloc(sizeof(*resultBuffer));
