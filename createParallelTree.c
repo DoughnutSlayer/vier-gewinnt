@@ -321,11 +321,10 @@ int calculateTurnSteps(int recvCnt, int totalSendCount)
     if (rank == 0)
     {
         neededBytes +=
-          gbSize * currentGameboardsCount         // currentGameboardsBuffer
-          + gbSize * currentGameboardsCount       // taskSendBuffer
-          + gbArrSize * totalSendCount            // resultRecvBuffer
-          - knotSize * turnSizes[turnCounter - 1] // predecessorKnots
-          + knotSize * currentGameboardsCount;    // successorKnots
+          gbSize * currentGameboardsCount      // currentGameboardsBuffer
+          + gbSize * currentGameboardsCount    // taskSendBuffer
+          + gbArrSize * totalSendCount         // resultRecvBuffer
+          + knotSize * currentGameboardsCount; // successorKnots
     }
     neededBytes += gbSize * recvCnt      // taskRecvBuffer
                    + gbArrSize * recvCnt // resultSendBuffer
