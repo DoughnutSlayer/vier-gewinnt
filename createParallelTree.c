@@ -287,10 +287,10 @@ void saveNextGameboards(int totalRecvCount,
 void nextTurn()
 {
     refreshGameboardFiles();
-    refreshKnotQueues();
     turnCounter++;
 }
 
+/*
 void saveLastTurn()
 {
     for (int i = 0; i < turnSizes[turnCounter]; i++)
