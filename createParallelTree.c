@@ -192,7 +192,7 @@ void calculateBoardSuccessors(
 
 void addCurrentGameboardsTurn()
 {
-    int currentTurnSize = 0;
+    int stepSize = 0;
 
     for (int i = 0; i < turnSizes[turnCounter - 1]; i++)
     {
@@ -207,7 +207,7 @@ void addCurrentGameboardsTurn()
                 continue;
             }
 
-            struct knot *successor = &(successorKnots[currentTurnSize]);
+            struct knot *successor = &(successorKnots[stepSize]);
             if (successorGameboard.isWonBy == 2)
             {
                 successor->winPercentage = 100;
@@ -216,11 +216,11 @@ void addCurrentGameboardsTurn()
             {
                 successor->winPercentage = 0;
             }
-            predecessor->successorIndices[j] = currentTurnSize;
-            currentTurnSize++;
+            predecessor->successorIndices[j] = stepSize;
+            stepSize++;
         }
     }
-    turnSizes[turnCounter] += currentTurnSize;
+    turnSizes[turnCounter] += stepSize;
     setTurnDisplacement(turnCounter);
 
     FILE *knotsFile = fopen(saveFileName, "ab");
