@@ -489,7 +489,7 @@ void calculateTurns(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
             if (rank == 0)
             {
                 resultRecvBuffer =
-                  malloc(sizeof(resultRecvBuffer[0]) * totalSendCount);
+                  malloc(sizeof(resultRecvBuffer[0]) * currentStepSendCount);
             }
             MPI_Gatherv(resultSendBuffer, recvCnt, *boardArrayType,
                         resultRecvBuffer, sendCnts, displacements,
