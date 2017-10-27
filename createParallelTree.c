@@ -184,21 +184,26 @@ void calculateBoardSuccessors(
 
 void addCurrentGameboardsTurn()
 {
+    struct knot *successorKnots =
+      malloc(sizeof(*successorKnots) * currentBufferedGameboardsCount);
     int stepSize = 0;
-
-    for (int i = 0; i < turnSizes[turnCounter - 1]; i++)
+    int successorIndexIndex = turnSizes[turnCounter] % boardWidth;
+    FILE *saveFile = fopen(saveFileName, "r+b");
+    fseek(
+      saveFile,
+      (turnDisplacements[turnCounter - 1]     // Start of predecessor turn
+       + turnSizes[turnCounter] / boardWidth) // First unfinished predecessor
+          * sizeof(struct knot)
+        + offsetof(struct knot, successorIndices) // Start of indices
+        + successorIndexIndex * sizeof(int),      // First unset index
+      SEEK_SET);
+    for (int i = 0; i < currentBufferedGameboardsCount; i++)
     {
-        struct knot *predecessor = &(predecessorKnots[i]);
-        for (int j = 0; j < boardWidth; j++)
+        struct gameboard successorGameboard = currentGameboardsBuffer[i];
+        int successorGameboardIndex = -1;
+        if (successorGameboard.nextPlayer != 0)
         {
-            struct gameboard successorGameboard =
-              currentGameboardsBuffer[(boardWidth * i) + j];
-            if (successorGameboard.nextPlayer == 0)
-            {
-                predecessor->successorIndices[j] = -1;
-                continue;
-            }
-
+            successorGameboardIndex = turnSizes[turnCounter] + stepSize;
             struct knot *successor = &(successorKnots[stepSize]);
             if (successorGameboard.isWonBy == 2)
             {
@@ -208,17 +213,25 @@ void addCurrentGameboardsTurn()
             {
                 successor->winPercentage = 0;
             }
-            predecessor->successorIndices[j] = stepSize;
             stepSize++;
+        }
+
+        fwrite(&successorGameboardIndex, sizeof(successorGameboardIndex), 1,
+               saveFile);
+        successorIndexIndex++;
+        successorIndexIndex %= boardWidth;
+        if (successorIndexIndex == 0)
+        {
+            fseek(saveFile, sizeof(struct knot)
+                              - sizeof(((struct knot *) 0)->successorIndices),
+                  SEEK_CUR);
         }
     }
     turnSizes[turnCounter] += stepSize;
-    setTurnDisplacement(turnCounter);
 
-    FILE *knotsFile = fopen(saveFileName, "ab");
-    fwrite(predecessorKnots, sizeof(*predecessorKnots),
-           turnSizes[turnCounter - 1], knotsFile);
-    fclose(knotsFile);
+    fseek(saveFile, 0, SEEK_END);
+    fwrite(successorKnots, sizeof(*successorKnots), stepSize, saveFile);
+    fclose(saveFile);
 }
 
 void calculatePredecessorWinpercentages(
