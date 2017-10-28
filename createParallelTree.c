@@ -106,25 +106,25 @@ void defineMPIDatatypes(MPI_Datatype *boardType, MPI_Datatype *boardArrayType,
     MPI_Type_commit(winChanceArrayType);
 }
 
-void prepareBoardSend(int totalSendCount, struct gameboard *boardSendBuffer)
+void prepareBoardSend(int *totalSendCount, struct gameboard *boardSendBuffer)
 {
-    int currentBoardIndex = 0;
-    for (int i = 0; i < totalSendCount;)
+    int sendBoardIndex = 0;
+    for (int i = 0; i < currentBufferedGameboardsCount; i++)
     {
         if (currentGameboardsBuffer[i].nextPlayer == 0)
         {
-            currentBoardIndex++;
             continue;
         }
-        boardSendBuffer[i] = currentGameboardsBuffer[currentBoardIndex];
-        currentBoardIndex++;
-        i++;
+        boardSendBuffer[sendBoardIndex] = currentGameboardsBuffer[i];
+        sendBoardIndex++;
     }
+    *totalSendCount = sendBoardIndex;
 }
 
 void prepareWinpercentageArraySend(
-  int turnIndex, double (*winpercentageArraySendBuffer)[BOARD_WIDTH],
-  int *sendCnts, int *displacements)
+  int turnIndex, struct knot *predecessorKnots, struct knot *successorKnots,
+  double (*winpercentageArraySendBuffer)[BOARD_WIDTH], int *sendCnts,
+  int *displacements)
 {
     for (int j = 0; j < turnSizes[turnIndex]; j++)
     {
@@ -287,23 +287,28 @@ void saveNextGameboards(int totalRecvCount,
 void nextTurn()
 {
     refreshGameboardFiles();
+    setTurnDisplacement(turnCounter);
     turnCounter++;
 }
 
-/*
 void saveLastTurn()
 {
+    int negs[BOARD_WIDTH];
+    for (int i = 0; i < boardWidth; i++)
+    {
+        negs[i] = -1;
+    }
+    FILE *saveFile = fopen(saveFileName, "r+b");
+    fseek(saveFile, sizeof(struct knot) * turnDisplacements[turnCounter]
+                      + offsetof(struct knot, successorIndices),
+          SEEK_SET);
     for (int i = 0; i < turnSizes[turnCounter]; i++)
     {
-        for (int j = 0; j < boardWidth; j++)
-        {
-            successorKnots[i].successorIndices[j] = -1;
-        }
+        fwrite(negs, sizeof(*negs), boardWidth, saveFile);
+        fseek(saveFile, sizeof(struct knot)
+                          - sizeof(((struct knot *) 0)->successorIndices),
+              SEEK_CUR);
     }
-    FILE *saveFile = fopen(saveFileName, "ab");
-    fwrite(successorKnots, sizeof(*successorKnots), turnSizes[turnCounter],
-           saveFile);
-    fclose(saveFile);
 }
 
 int calculateTurnSteps(int recvCnt, int totalSendCount)
@@ -323,13 +328,14 @@ int calculateTurnSteps(int recvCnt, int totalSendCount)
         neededBytes +=
           gbSize * currentGameboardsCount      // currentGameboardsBuffer
           + gbSize * currentGameboardsCount    // taskSendBuffer
-          + gbArrSize * totalSendCount         // resultRecvBuffer
+          + gbArrSize * currentGameboardsCount // resultRecvBuffer
           + knotSize * currentGameboardsCount; // successorKnots
     }
-    neededBytes += gbSize * recvCnt      // taskRecvBuffer
-                   + gbArrSize * recvCnt // resultSendBuffer
-                   + gbSize              // createdBoard
-                   + 1000;               // buffer
+    neededBytes +=
+      gbSize * (currentGameboardsCount / worldSize + 1)      // taskRecvBuffer
+      + gbArrSize * (currentGameboardsCount / worldSize + 1) // resultSendBuffer
+      + gbSize                                               // createdBoard
+      + 1000;                                                // buffer
 
     while (!sufficientMemory)
     {
@@ -432,7 +438,7 @@ void calculateTurns(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
     int *displacements = malloc(sizeof(*sendCnts) * worldSize);
     struct gameboard *taskRecvBuffer;
     int recvCnt;
-    struct gameboard(*resultSendBuffer)[BOARD_WIDTH];
+    struct gameboard(*resultSendBuffer)[BOARD_WIDTH]; // TODO: Use gameboard *
     struct gameboard(*resultRecvBuffer)[BOARD_WIDTH];
     while (!treeFinished)
     {
@@ -449,24 +455,18 @@ void calculateTurns(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
 
         for (int i = 0; i < turnSteps; i++)
         {
-            int currentStepSendCount = totalSendCount / turnSteps;
-            if (turnSteps > 1)
-            {
-                currentStepSendCount +=
-                  (i < totalSendCount % turnSteps) ? 1 : 0;
-                calculateSendCounts(currentStepSendCount, sendCnts,
-                                    displacements);
-                MPI_Scatter(sendCnts, 1, MPI_INT, &recvCnt, 1, MPI_INT, 0,
-                            MPI_COMM_WORLD);
-            }
-
+            int currentStepSendCount = 0;
             if (rank == 0)
             {
                 loadCurrentGameboards(i, turnSteps);
-                taskSendBuffer =
-                  malloc(sizeof(*taskSendBuffer) * currentStepSendCount);
-                prepareBoardSend(currentStepSendCount, taskSendBuffer);
+                taskSendBuffer = malloc(sizeof(*taskSendBuffer)
+                                        * currentBufferedGameboardsCount);
+                prepareBoardSend(&currentStepSendCount, taskSendBuffer);
+                calculateSendCounts(currentStepSendCount, sendCnts,
+                                    displacements);
             }
+            MPI_Scatter(sendCnts, 1, MPI_INT, &recvCnt, 1, MPI_INT, 0,
+                        MPI_COMM_WORLD);
 
             taskRecvBuffer =
               (struct gameboard *) malloc(sizeof(*taskRecvBuffer) * recvCnt);
@@ -505,25 +505,29 @@ void calculateTurns(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
         if (rank == 0)
         {
             treeFinished = 1;
+            FILE *nextGbFile = fopen(*nextGbFileNamePtr, "rb");
+            fseek(nextGbFile, 0, SEEK_SET);
+            struct gameboard buffer;
             for (int i = 0; i < nextGameboardsCount; i++)
             {
-                if (!(nextGameboards[i].isWonBy)
-                    && nextGameboards[i].nextPlayer)
+                fread(&buffer, sizeof(buffer), 1, nextGbFile);
+                if (!buffer.isWonBy && buffer.nextPlayer)
                 {
                     treeFinished = 0;
                     break;
                 }
             }
+
             nextTurn();
             if (treeFinished)
             {
+                loadCurrentGameboards(0, 1);
                 addCurrentGameboardsTurn();
-                saveLastTurn();
 
-                free(nextGameboards);
-                nextGameboards = NULL;
-                free(predecessorKnots);
-                predecessorKnots = NULL;
+                setTurnDisplacement(turnCounter);
+                saveLastTurn();
+                remove(gbFileNameA);
+                remove(gbFileNameB);
             }
         }
         MPI_Bcast(&treeFinished, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -532,35 +536,39 @@ void calculateTurns(MPI_Datatype *boardType, MPI_Datatype *boardArrayType)
     free(displacements);
 }
 
-void loadKnotQueues(int turnIndex)
+void loadKnotQueues(int turnIndex, struct knot **predecessorKnots,
+                    struct knot **successorKnots)
 {
     FILE *saveFile = fopen(saveFileName, "rb");
 
-    if (predecessorKnots)
+    if (*predecessorKnots)
     {
-        successorKnots = predecessorKnots;
+        *successorKnots = *predecessorKnots;
     }
     else
     {
-        successorKnots =
-          malloc(sizeof(*successorKnots) * turnSizes[turnIndex + 1]);
+        *successorKnots =
+          malloc(sizeof(**successorKnots) * turnSizes[turnIndex + 1]);
         fseek(saveFile,
-              sizeof(*successorKnots) * turnDisplacements[turnIndex + 1],
+              sizeof(**successorKnots) * turnDisplacements[turnIndex + 1],
               SEEK_SET);
-        fread(successorKnots, sizeof(*successorKnots), turnSizes[turnIndex + 1],
-              saveFile);
+        fread(*successorKnots, sizeof(**successorKnots),
+              turnSizes[turnIndex + 1], saveFile);
     }
-    predecessorKnots = malloc(sizeof(*predecessorKnots) * turnSizes[turnIndex]);
+    *predecessorKnots =
+      malloc(sizeof(**predecessorKnots) * turnSizes[turnIndex]);
 
-    fseek(saveFile, sizeof(*predecessorKnots) * turnDisplacements[turnIndex],
+    fseek(saveFile, sizeof(**predecessorKnots) * turnDisplacements[turnIndex],
           SEEK_SET);
-    fread(predecessorKnots, sizeof(*predecessorKnots), turnSizes[turnIndex],
+    fread(*predecessorKnots, sizeof(**predecessorKnots), turnSizes[turnIndex],
           saveFile);
     fclose(saveFile);
 }
 
 void calculateWinpercentages(MPI_Datatype *winpercentageArrayType)
 {
+    struct knot *predecessorKnots = NULL;
+    struct knot *successorKnots = NULL;
     int recvCnt;
     int *sendCnts = malloc(sizeof(*sendCnts) * worldSize);
     int *displacements = malloc(sizeof(*displacements) * worldSize);
@@ -570,14 +578,16 @@ void calculateWinpercentages(MPI_Datatype *winpercentageArrayType)
     double *resultRecvBuffer;
     turnCounter = turnCounter - 1;
     MPI_Bcast(&turnCounter, 1, MPI_INT, 0, MPI_COMM_WORLD);
-    for (int turnIndex = turnCounter; turnIndex >= 0; turnIndex--)
+    for (int turnIndex = turnCounter; turnIndex >= 0;
+         turnIndex--) // TODO: Use turnCounter as Index
     {
         taskSendBuffer = malloc(sizeof(*taskSendBuffer) * turnSizes[turnIndex]);
         if (rank == 0)
         {
-            loadKnotQueues(turnIndex);
-            prepareWinpercentageArraySend(turnIndex, taskSendBuffer, sendCnts,
-                                          displacements);
+            loadKnotQueues(turnIndex, &predecessorKnots, &successorKnots);
+            prepareWinpercentageArraySend(turnIndex, predecessorKnots,
+                                          successorKnots, taskSendBuffer,
+                                          sendCnts, displacements);
         }
 
         MPI_Scatter(sendCnts, 1, MPI_INT, &recvCnt, 1, MPI_INT, 0,
@@ -651,13 +661,12 @@ void buildParallelTree(struct knot *startKnot, struct gameboard *startGameboard)
 
     if (rank == 0)
     {
+        FILE *knotsFile = fopen(saveFileName, "wb");
+        fclose(knotsFile);
         setStartTurn(startGameboard);
         firstPlayer = (startGameboard->nextPlayer - turnCounter % 2);
         initializeQueues(*startGameboard);
         makeFirstTurn(startKnot);
-
-        FILE *knotsFile = fopen(saveFileName, "wb");
-        fclose(knotsFile);
     }
     MPI_Bcast(&firstPlayer, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
