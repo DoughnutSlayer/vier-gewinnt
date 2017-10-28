@@ -14,7 +14,6 @@ extern const int boardHeight;
 
 struct gameboard
 {
-    int predecessorIndex;
     int lanes[BOARD_WIDTH][BOARD_HEIGHT];
     int isWonBy;
     int nextPlayer;

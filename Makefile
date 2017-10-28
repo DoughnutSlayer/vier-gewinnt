@@ -30,4 +30,4 @@ all :
 
 .PHONY : clean
 clean :
-	rm -f $(OBJS) vier-gewinnt vier-gewinnt.exe
+	rm -f $(OBJS) '.gameboardsA' '.gameboardsB' vier-gewinnt vier-gewinnt.exe
