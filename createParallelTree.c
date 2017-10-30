@@ -207,6 +207,10 @@ void addCurrentGameboardsTurn()
             struct knot *successor = &(successorKnots[stepSize]);
             if (successorGameboard.isWonBy == 2)
             {
+                successor->winPercentage = 200;
+            }
+            else if (successorGameboard.isWonBy == 3)
+            {
                 successor->winPercentage = 100;
             }
             else
@@ -240,14 +244,13 @@ void calculatePredecessorWinpercentages(
 {
     for (int j = 0; j < winpercentageArrayCount; j++)
     {
-        double result = 0;
-        int resultCount = 0;
-        if (winpercentageArrays[j][0] < 0)
+        double result = winpercentageArrays[j][0];
+        if (result < 0)
         {
-            predecessorWinpercentages[j] = -1;
+            result = -1;
             continue;
         }
-        for (int k = 0; k < boardWidth; k++)
+        for (int k = 1; k < boardWidth; k++)
         {
             if (winpercentageArrays[j][k] < 0)
             {
@@ -259,13 +262,8 @@ void calculatePredecessorWinpercentages(
             }
             else
             {
-                result += winpercentageArrays[j][k];
-                resultCount++;
+                result = fmin(result, winpercentageArrays[j][k]);
             }
-        }
-        if (!(turnIndex % 2 == firstPlayer % 2))
-        {
-            result = result / resultCount;
         }
         predecessorWinpercentages[j] = result;
     }
