@@ -267,21 +267,23 @@ void calculatePredecessorWinpercentages(
         if (result < 0)
         {
             result = -1;
-            continue;
         }
-        for (int k = 1; k < boardWidth; k++)
+        else
         {
-            if (winpercentageArrays[j][k] < 0)
+            for (int k = 1; k < boardWidth; k++)
             {
-                break;
-            }
-            if (turnIndex % 2 == firstPlayer % 2)
-            {
-                result = fmax(result, winpercentageArrays[j][k]);
-            }
-            else
-            {
-                result = fmin(result, winpercentageArrays[j][k]);
+                if (winpercentageArrays[j][k] < 0)
+                {
+                    break;
+                }
+                if (turnIndex % 2 == firstPlayer % 2)
+                {
+                    result = fmax(result, winpercentageArrays[j][k]);
+                }
+                else
+                {
+                    result = fmin(result, winpercentageArrays[j][k]);
+                }
             }
         }
         predecessorWinpercentages[j] = result;
