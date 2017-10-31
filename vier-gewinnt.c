@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include "createParallelTree.h"
 #include "gameboard.h"
 #include "knot.h"
@@ -153,15 +154,48 @@ int main(int argc, char *argv[])
         playerGameboard = malloc(sizeof(*playerGameboard));
         *playerGameboard = initialGameboard;
 
-        printPlayerPrompt();
-        makePlayerTurn();
-        printPlayerGameboard();
-        printf("Calculating...\n");
+        if (argc < 2 || strcmp(argv[1], "bench"))
+        {
+            printPlayerPrompt();
+            makePlayerTurn();
+            printPlayerGameboard();
+            printf("Calculating...\n");
 
-        *playerGameboardCopy = *playerGameboard;
+            *playerGameboardCopy = *playerGameboard;
+        }
     }
 
-    buildParallelTree(playerKnot, playerGameboard);
+    if (argc < 2 || strcmp(argv[1], "bench"))
+    {
+        buildParallelTree(playerKnot, playerGameboard);
+    }
+    else
+    {
+        struct timespec before;
+        struct timespec after;
+        if (rank == 0)
+        {
+            clock_gettime(CLOCK_MONOTONIC, &before);
+        }
+
+        buildParallelTree(playerKnot, playerGameboard);
+
+        if (rank == 0)
+        {
+            clock_gettime(CLOCK_MONOTONIC, &after);
+            struct timespec delta = {after.tv_sec - before.tv_sec,
+                                     after.tv_nsec - before.tv_nsec};
+            if (delta.tv_sec < 10)
+            {
+                long deltaNsec = delta.tv_sec * 1000000000 + delta.tv_nsec;
+                printf("%ld,%ld\n", deltaNsec / 1000000000,
+                       deltaNsec % 1000000000);
+            }
+        }
+
+        MPI_Finalize();
+        return 0;
+    }
 
     if (rank == 0)
     {
