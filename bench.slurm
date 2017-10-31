@@ -3,7 +3,6 @@
 #SBATCH --nodes=2
 #SBATCH --ntasks=4
 #SBATCH --partition=west
-#SBATCH --output=job.out
 #SBATCH --error=job.err
 
 . /etc/profile.d/wr-spack.sh

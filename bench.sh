@@ -9,8 +9,17 @@ for (( i = 4; i > 1; i-- )); do
             logFileName="./logs/${j}x$k-$i"
             rm -f $logFileName
             for (( l = 0; l < 5; l++ )); do
-                sbatch bench.slurm
-                cat job.out >> $logFileName
+                sbatch -o job-$l.out bench.slurm
+            done
+
+            jobsDone="False"
+            until [[ "$jobsDone" == "" ]]; do
+                jobsDone='squeue | grep elich'
+                sleep 10
+            done
+
+            for (( l = 0; l < 5; l++ )); do
+                cat job-$l.out >> $logFileName
             done
         done
     done
