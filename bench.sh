@@ -14,7 +14,7 @@ for (( i = 4; i > 1; i-- )); do
 
             jobsDone="False"
             until [[ "$jobsDone" == "" ]]; do
-                jobsDone='squeue | grep elich'
+                jobsDone=$(squeue | grep elich)
                 sleep 10
             done
 

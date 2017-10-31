@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --nodes=2
+#SBATCH --nodes=1
 #SBATCH --ntasks=4
 #SBATCH --partition=west
 #SBATCH --error=job.err
